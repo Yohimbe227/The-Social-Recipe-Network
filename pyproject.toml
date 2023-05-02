@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "foodgram-project-react"
+version = "0.1.0"
+description = ""
+authors = ["Каманин Юрий <kamanchi22@mail.ru>"]
+readme = "README.md"
+packages = [{include = "foodgram_project_react"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.2"
+djangorestframework = "^3.14.0"
+black = "^23.3.0"
+poetry = "^1.4.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
