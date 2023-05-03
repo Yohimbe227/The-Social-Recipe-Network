@@ -1,34 +1,22 @@
 from django.http import HttpRequest, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import parser_classes
-from rest_framework.exceptions import MethodNotAllowed, ParseError
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.parsers import MultiPartParser, FileUploadParser
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.response import Response
-from rest_framework.utils import json
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from recipes.models import Recipe
-from recipes.serializers import RecipeSerializer
+from recipes.models import Recipe, Tag, User
+from recipes.pagination import RecipePagination
+from recipes.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
+    TagSerializer, CurrentUserSerializer
 
 
 class RecipeView(ModelViewSet):
-    parser_class = (FileUploadParser,)
     queryset = Recipe.objects.all()
-    pagination_class = LimitOffsetPagination
+    pagination_class = RecipePagination
     ordering_fields = (
         'name',
     )
-    serializer_class = RecipeSerializer
-
-    def post(self, request, format=None):
-        if 'file' not in request.data:
-            raise ParseError("Empty content")
-
-        f = request.data['file']
-
-        Recipe.image.save(f.name, f, save=True)
-        return Response(status=status.HTTP_201_CREATED)
 
     def update(self, *args: list, **kwargs: dict) -> Response:
         """
@@ -63,3 +51,27 @@ class RecipeView(ModelViewSet):
         """
         return super().update(request, *args, **kwargs, partial=True)
 
+    def get_serializer_class(self) -> [
+        RecipeReadSerializer, RecipeWriteSerializer,
+    ]:
+        """Call the desired serializer depending on the type of query.
+
+        Returns:
+            Desired serializer.
+        """
+        if self.action in (
+            'list',
+            'retrieve',
+        ):
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
+
+
+class TagView(ModelViewSet):
+    queryset = Tag.objects.all().order_by('id')
+    serializer_class = TagSerializer
+
+
+class CurrentUserViewSet(ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = CurrentUserSerializer

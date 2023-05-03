@@ -10,7 +10,6 @@ class Ingredient(models.Model):
     name = models.CharField(max_length=NAME_MAX_LENGTH)
     amount = models.PositiveIntegerField()
     measurement_unit = models.CharField(max_length=UNIT_MAX_LENGTH)
-    duration = models.PositiveIntegerField()
 
     class Meta:
         verbose_name = 'ингридиент'
@@ -33,16 +32,22 @@ class Tag(models.Model):
         return self.name
 
 
+def upload_to(instance, filename):
+    return 'images/{filename}'.format(filename=filename)
+
+
 class Recipe(models.Model):
-    description = models.TextField(
+    text = models.TextField(
         max_length=2000,
         verbose_name='Описание рецепта',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        verbose_name="автор",
+        null=True,
     )
-    image = models.ImageField(max_length=100, upload_to='recipes/media',)
+    image = models.ImageField(upload_to=upload_to, blank=True, null=True)
 
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -50,11 +55,13 @@ class Recipe(models.Model):
         verbose_name='Название ингридиента',
     )
     name = models.CharField(max_length=NAME_MAX_LENGTH)
-
+    is_favorited = models.BooleanField()
+    is_in_shopping_cart = models.BooleanField()
     tags = models.ManyToManyField(
         Tag,
         through='TagReceipt',
     )
+    cooking_time = models.PositiveIntegerField()
 
     class Meta:
         verbose_name = 'рецепт'
@@ -79,7 +86,7 @@ class TagReceipt(models.Model):
     verbose_name = 'тэг'
 
 
-class IngredientReceipt(models.Model):
+class IngredientRecipe(models.Model):
     ingredients = models.ForeignKey(
         Ingredient,
         on_delete=models.SET_NULL,
