@@ -1,5 +1,7 @@
 from django.http import HttpRequest, HttpResponse
-from rest_framework import status
+from djoser import permissions
+from djoser.views import UserViewSet
+
 from rest_framework.decorators import parser_classes
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.response import Response
@@ -8,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from recipes.models import Recipe, Tag, User
 from recipes.pagination import RecipePagination
 from recipes.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
-    TagSerializer, CurrentUserSerializer
+    TagSerializer, CustomUserSerializer
 
 
 class RecipeView(ModelViewSet):
@@ -70,8 +72,3 @@ class RecipeView(ModelViewSet):
 class TagView(ModelViewSet):
     queryset = Tag.objects.all().order_by('id')
     serializer_class = TagSerializer
-
-
-class CurrentUserViewSet(ReadOnlyModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = CurrentUserSerializer

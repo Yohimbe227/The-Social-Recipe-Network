@@ -3,8 +3,10 @@ import base64
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
-from recipes.models import Recipe, Tag, Ingredient, User
-from recipes.validators import ColorValidate
+from recipes.models import Recipe, Tag, Ingredient
+
+# from users.serializers import CurrentUserSerializer
+from users.serializers import UserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -45,12 +47,6 @@ class IngredientSerializer(serializers.ModelSerializer):
             'amount',
             'measurement_unit',
         )
-
-
-class CurrentUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'id')
 
 
 class Base64ImageField(serializers.ImageField):
@@ -105,7 +101,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     image = serializers.ImageField(required=True)
-    author = CurrentUserSerializer()
+    author = UserSerializer()
 
     class Meta:
         model = Recipe

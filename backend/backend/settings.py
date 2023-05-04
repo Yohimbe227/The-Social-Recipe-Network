@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from users.serializers import UserSerializer
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1"
@@ -18,12 +20,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'django_filters',
-    'recipes.apps.RecipesConfig',
     'sorl.thumbnail',
+    'rest_framework_simplejwt',
     'users.apps.UsersConfig',
-    'rest_framework',
-    'djoser',
-
+    'recipes.apps.RecipesConfig',
 ]
 
 MIDDLEWARE = [
@@ -106,8 +106,18 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-   'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    'SERIALIZERS': {},
+    # 'LOGIN_FIELD': 'email'
+}
+
+AUTH_USER_MODEL = 'users.User'
+AUTH_MAX_LENGTH = 100
