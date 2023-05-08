@@ -1,14 +1,16 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1"
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -57,10 +59,32 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': {
+        'ENGINE': os.getenv(
+            'DB_ENGINE',
+            default='django.db.backends.postgresql',
+        ),
+        'NAME': os.getenv(
+            'DB_NAME',
+            default='postgres',
+        ),
+        'USER': os.getenv(
+            'POSTGRES_USER',
+            default='postgres',
+        ),
+        'PASSWORD': os.getenv(
+            'POSTGRES_PASSWORD',
+            default='postgres',
+        ),
+        'HOST': os.getenv(
+            'DB_HOST',
+            default='localhost',
+        ),
+        'PORT': os.getenv(
+            'DB_PORT',
+            default='5432',
+        ),
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -78,7 +102,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
 
 TIME_ZONE = "UTC"
 
