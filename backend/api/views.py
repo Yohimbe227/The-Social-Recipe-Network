@@ -1,12 +1,21 @@
+from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.http import HttpRequest
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from djoser.views import UserViewSet as DjoserUserViewSet
 
+from core.classes import AddDelView
 from recipes.models import Recipe, Tag
 from api.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
-    TagSerializer
+    TagSerializer, UserSubscribeSerializer
+from users.models import Subscriptions
+
+User = get_user_model()
 
 
 class RecipeView(ModelViewSet):
@@ -71,3 +80,70 @@ class TagView(ModelViewSet):
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
     pagination_class = None
+
+
+class UserViewSet(DjoserUserViewSet, AddDelView):
+    """Работает с пользователями.
+
+    ViewSet для работы с пользователми - вывод таковых,
+    регистрация.
+    Для авторизованных пользователей —
+    возможность подписаться на автора рецепта.
+    """
+
+    add_serializer = UserSubscribeSerializer
+    # permission_classes = (DjangoModelPermissions,)
+
+    @action(
+        methods=('post', ),
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
+    def subscribe(self, request: HttpRequest, id: int | str) -> Response:
+        """Создаёт/удалет связь между пользователями.
+
+        Вызов метода через url: */user/<int:id>/subscribe/.
+
+        Args:
+            request (WSGIRequest): Объект запроса.
+            id (int):
+                id пользователя, на которого желает подписаться
+                или отписаться запрашивающий пользователь.
+
+        Returns:
+            Responce: Статус подтверждающий/отклоняющий действие.
+        """
+        return self._add_del_obj(id, Subscriptions, Q(author__id=id))
+
+    @action(methods=('get',), detail=False)
+    def subscriptions(self, request: HttpRequest) -> Response:
+        """Список подписок пользоваетеля.
+
+        Вызов метода через url: */user/<int:id>/subscribtions/.
+
+        Args:
+            request (HttpRequest): Объект запроса.
+
+        Returns:
+            Responce:
+                401 - для неавторизованного пользователя.
+                Список подписок для авторизованного пользователя.
+        """
+        if self.request.user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        pages = self.paginate_queryset(
+            User.objects.filter(subscribers__user=self.request.user)
+        )
+        serializer = UserSubscribeSerializer(pages, many=True)
+        return self.get_paginated_response(serializer.data)
+
+
+class TagViewSet(ReadOnlyModelViewSet):
+    """Работает с тэгами.
+
+    Изменение и создание тэгов разрешено только админам.
+    """
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    # permission_classes = (AdminOrReadOnly,)

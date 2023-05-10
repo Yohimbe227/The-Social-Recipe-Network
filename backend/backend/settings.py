@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django_filters',
     'sorl.thumbnail',
     'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
     'rest_framework',
     'rest_framework.authtoken',
@@ -119,26 +120,21 @@ NAME_MAX_LENGTH = 100
 UNIT_MAX_LENGTH = 20
 
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SERIALIZERS': {
-        'current_user': 'users.serializers.CustomUserSerializer',
-        'user': 'users.serializers.CustomUserSerializer',
-        # 'user_create': 'users.serializers.CustomUserSerializer',
-        'token_create': 'djoser.serializers.TokenCreateSerializer',
-    },
-    'HIDE_USERS': False,
     'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
     'PERMISSIONS': {
-        'user': [
-            'rest_framework.permissions.AllowAny'
-        ],
-        'user_list': [
-            'rest_framework.permissions.AllowAny'
-        ],
-        'token_create': ['rest_framework.permissions.AllowAny'],
-
+        # 'resipe': ('api.permissions.AuthorStaffOrReadOnly,',),
+        # 'recipe_list': ('api.permissions.AuthorStaffOrReadOnly',),
+        # 'user': ('api.permissions.OwnerUserOrReadOnly',),
+        'user': ('rest_framework.permissions.AllowAny',),
+        # 'user_list': ('api.permissions.OwnerUserOrReadOnly',),
+        'user_list': ('rest_framework.permissions.AllowAny',),
+    },
+    'SERIALIZERS': {
+        'user': 'api.serializers.UserSerializer',
+        'user_list': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+        'user_create': 'api.serializers.UserSerializer',
     },
 }
 
