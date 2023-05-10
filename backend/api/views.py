@@ -1,24 +1,21 @@
-from django.http import HttpRequest, HttpResponse
-from djoser import permissions
-from djoser.views import UserViewSet
-
-from rest_framework.decorators import parser_classes
+from django.http import HttpRequest
 from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 
-from recipes.models import Recipe, Tag, User
-from recipes.pagination import RecipePagination
-from recipes.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
-    TagSerializer, CustomUserSerializer
+from recipes.models import Recipe, Tag
+from api.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
+    TagSerializer
 
 
 class RecipeView(ModelViewSet):
     queryset = Recipe.objects.all()
-    pagination_class = RecipePagination
+    permission_classes = [AllowAny, ]
     ordering_fields = (
         'name',
     )
+    # lookup_field = 'id'
 
     def update(self, *args: list, **kwargs: dict) -> Response:
         """
@@ -72,3 +69,5 @@ class RecipeView(ModelViewSet):
 class TagView(ModelViewSet):
     queryset = Tag.objects.all().order_by('id')
     serializer_class = TagSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None

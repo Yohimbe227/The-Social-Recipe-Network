@@ -1,15 +1,16 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from backend.settings import NAME_MAX_LENGTH, UNIT_MAX_LENGTH
-
-User = get_user_model()
+from users.models import User
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=NAME_MAX_LENGTH)
+    name = models.CharField(max_length=NAME_MAX_LENGTH, blank=True)
     amount = models.PositiveIntegerField()
-    measurement_unit = models.CharField(max_length=UNIT_MAX_LENGTH)
+    measurement_unit = models.CharField(
+        max_length=UNIT_MAX_LENGTH,
+        default='г'
+    )
 
     class Meta:
         verbose_name = 'ингридиент'
@@ -27,9 +28,6 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'тэг'
         verbose_name_plural = 'тэги'
-
-    def __str__(self) -> str:
-        return self.name
 
 
 def upload_to(instance, filename):
@@ -51,15 +49,15 @@ class Recipe(models.Model):
 
     ingredients = models.ManyToManyField(
         Ingredient,
-        related_name='title',
-        verbose_name='Название ингридиента',
+        related_name='ingredient',
+        verbose_name='название ингридиента',
     )
     name = models.CharField(max_length=NAME_MAX_LENGTH)
     is_favorited = models.BooleanField()
     is_in_shopping_cart = models.BooleanField()
     tags = models.ManyToManyField(
         Tag,
-        through='TagReceipt',
+        through='TagRecipe',
     )
     cooking_time = models.PositiveIntegerField()
 
@@ -71,7 +69,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class TagReceipt(models.Model):
+class TagRecipe(models.Model):
 
     tags = models.ForeignKey(
         Tag,
@@ -99,28 +97,3 @@ class IngredientRecipe(models.Model):
     )
     verbose_name = 'ингридиенты'
 
-
-class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower',
-        verbose_name='подписчик',
-        null=True,
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='автор',
-        null=True,
-    )
-
-    class Meta:
-        unique_together = (
-            'user',
-            'author',
-        )
-
-    def __str__(self) -> str:
-        return f'Подписался {self.user} на {self.author}'

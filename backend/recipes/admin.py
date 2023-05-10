@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag, User
+from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag, User, \
+    TagRecipe
 
 
 class BaseAdmin(admin.ModelAdmin):
@@ -10,6 +11,11 @@ class BaseAdmin(admin.ModelAdmin):
 class IngredientRecipeInline(admin.TabularInline):
     model = IngredientRecipe
     extra = 1
+
+
+class TagRecipeInline(admin.TabularInline):
+    model = TagRecipe
+    extra = 2
 
 
 class UserAdmin(BaseAdmin):
@@ -25,9 +31,7 @@ class UserAdmin(BaseAdmin):
 @admin.register(Ingredient)
 class IngredientAdmin(BaseAdmin):
     model = Ingredient
-    inlines = [
-        IngredientRecipeInline,
-    ]
+
     list_display = (
         'pk',
         'name',
@@ -36,10 +40,24 @@ class IngredientAdmin(BaseAdmin):
     search_fields = ('name',)
 
 
+@admin.register(Tag)
+class TagAdmin(BaseAdmin):
+    model = Tag
+    list_display = (
+        'pk',
+        'name',
+        'color',
+        'slug',
+    )
+    search_fields = ('name',)
+    list_filter = ('slug',)
+
+
 @admin.register(Recipe)
 class RecipeAdmin(BaseAdmin):
     inlines = [
         IngredientRecipeInline,
+        TagRecipeInline,
     ]
     list_display = (
         'pk',
@@ -55,13 +73,4 @@ class RecipeAdmin(BaseAdmin):
     )
 
 
-@admin.register(Tag)
-class CategoryAdmin(BaseAdmin):
-    list_display = (
-        'pk',
-        'name',
-        'color',
-        'slug',
-    )
-    search_fields = ('name',)
-    list_filter = ('slug',)
+

@@ -2,15 +2,13 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from users.serializers import UserSerializer
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1"
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -21,9 +19,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'django_filters',
     'sorl.thumbnail',
-    'rest_framework_simplejwt',
     'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -57,10 +57,32 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': {
+        'ENGINE': os.getenv(
+            'DB_ENGINE',
+            default='django.db.backends.postgresql',
+        ),
+        'NAME': os.getenv(
+            'DB_NAME',
+            default='food',
+        ),
+        'USER': os.getenv(
+            'POSTGRES_USER',
+            default='postgres',
+        ),
+        'PASSWORD': os.getenv(
+            'POSTGRES_PASSWORD',
+            default=4130,
+        ),
+        'HOST': os.getenv(
+            'DB_HOST',
+            default='localhost',
+        ),
+        'PORT': os.getenv(
+            'DB_PORT',
+            default='5432',
+        ),
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -78,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
 
 TIME_ZONE = "UTC"
 
@@ -96,28 +118,40 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 NAME_MAX_LENGTH = 100
 UNIT_MAX_LENGTH = 20
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-}
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'AUTH_HEADER_TYPES': ('Bearer',),
-}
-
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SERIALIZERS': {},
-    # 'LOGIN_FIELD': 'email'
+    'SERIALIZERS': {
+        'current_user': 'users.serializers.CustomUserSerializer',
+        'user': 'users.serializers.CustomUserSerializer',
+        # 'user_create': 'users.serializers.CustomUserSerializer',
+        'token_create': 'djoser.serializers.TokenCreateSerializer',
+    },
+    'HIDE_USERS': False,
+    'LOGIN_FIELD': 'email',
+    'PERMISSIONS': {
+        'user': [
+            'rest_framework.permissions.AllowAny'
+        ],
+        'user_list': [
+            'rest_framework.permissions.AllowAny'
+        ],
+        'token_create': ['rest_framework.permissions.AllowAny'],
+
+    },
 }
 
 AUTH_USER_MODEL = 'users.User'
 AUTH_MAX_LENGTH = 100
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated'
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6
+}

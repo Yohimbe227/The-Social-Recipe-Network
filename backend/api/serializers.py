@@ -1,12 +1,12 @@
 import base64
 
 from django.core.files.base import ContentFile
+from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 
 from recipes.models import Recipe, Tag, Ingredient
 
-# from users.serializers import CurrentUserSerializer
-from users.serializers import UserSerializer
+from users.serializers import CustomUserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -60,32 +60,40 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class RecipeWriteSerializer(serializers.ModelSerializer):
-    tags = serializers.SlugRelatedField(
-        many=True,
-        slug_field='slug',
-        queryset=Tag.objects.all()
-    )
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-    )
+class TagWriteField(serializers.PrimaryKeyRelatedField):
 
+    def to_representation(self, value):
+        return {
+            'id': value.pk,
+            'name': value.name,
+            'color': value.color,
+            'slug': value.slug
+        }
+
+
+class RecipeWriteSerializer(WritableNestedModelSerializer):
+    tags = TagWriteField(
+        many=True,
+        queryset=Tag.objects.all(),
+    )
+    ingredients = IngredientSerializer(
+        many=True,
+    )
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Recipe
         fields = (
             'id',
-            'name',
-            'text',
-            'author',
-            'image',
-            'ingredients',
             'tags',
-            'cooking_time',
+            'author',
+            'ingredients',
             'is_favorited',
             'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
         )
 
 
@@ -101,7 +109,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     image = serializers.ImageField(required=True)
-    author = UserSerializer()
+    author = CustomUserSerializer()
 
     class Meta:
         model = Recipe
