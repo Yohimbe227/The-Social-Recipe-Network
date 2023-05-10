@@ -1,11 +1,14 @@
 from django.contrib.auth import get_user_model
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, \
+    DjangoModelPermissions
 from rest_framework.response import Response
+from rest_framework.routers import APIRootView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from djoser.views import UserViewSet as DjoserUserViewSet
 
@@ -13,9 +16,15 @@ from core.classes import AddDelView
 from recipes.models import Recipe, Tag
 from api.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
     TagSerializer, UserSubscribeSerializer
+from recipes.pagination import PageLimitPagination
 from users.models import Subscriptions
 
 User = get_user_model()
+
+
+class BaseAPIRootView(APIRootView):
+    """Базовые пути API приложения.
+    """
 
 
 class RecipeView(ModelViewSet):
@@ -78,34 +87,34 @@ class RecipeView(ModelViewSet):
 class TagView(ModelViewSet):
     queryset = Tag.objects.all().order_by('id')
     serializer_class = TagSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny, ]
     pagination_class = None
 
 
 class UserViewSet(DjoserUserViewSet, AddDelView):
     """Работает с пользователями.
 
-    ViewSet для работы с пользователми - вывод таковых,
+    ViewSet для работы с пользователми - отображение и
     регистрация.
     Для авторизованных пользователей —
     возможность подписаться на автора рецепта.
     """
-
+    pagination_class = PageLimitPagination
     add_serializer = UserSubscribeSerializer
-    # permission_classes = (DjangoModelPermissions,)
+    permission_classes = (DjangoModelPermissions,)
 
     @action(
-        methods=('post', ),
+        methods=('post', 'del', 'get'),
         detail=True,
         permission_classes=(IsAuthenticated,)
     )
-    def subscribe(self, request: HttpRequest, id: int | str) -> Response:
+    def subscribe(self, request: WSGIRequest, id: int | str) -> Response:
         """Создаёт/удалет связь между пользователями.
 
         Вызов метода через url: */user/<int:id>/subscribe/.
 
         Args:
-            request (WSGIRequest): Объект запроса.
+            request (HttpRequest): Объект запроса.
             id (int):
                 id пользователя, на которого желает подписаться
                 или отписаться запрашивающий пользователь.

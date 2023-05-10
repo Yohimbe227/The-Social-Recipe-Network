@@ -1,11 +1,12 @@
 import base64
+from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from djoser.serializers import UserSerializer
 from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
+from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
 from recipes.models import Recipe, Tag, Ingredient
@@ -112,39 +113,9 @@ class RecipeWriteSerializer(WritableNestedModelSerializer):
         )
 
 
-class RecipeReadSerializer(serializers.ModelSerializer):
-
-    tags = TagSerializer(
-        many=True,
-        read_only=True,
-    )
-
-    ingredients = IngredientSerializer(
-        many=True,
-        read_only=True,
-    )
-    image = serializers.ImageField(required=True)
-    author = UserSerializer()
-
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-            'name',
-            'image',
-            'text',
-            'cooking_time',
-        )
-
-
 class UserSerializer(ModelSerializer):
-    """Сериализатор для использования с моделью User.
-    """
+    """Сериализатор для использования с моделью User."""
+
     is_subscribed = SerializerMethodField()
 
     class Meta:
@@ -173,7 +144,10 @@ class UserSerializer(ModelSerializer):
         Returns:
             bool: True, если подписка есть. Во всех остальных случаях False.
         """
-        user = self.context.get('request').user
+        if self.context.get('request'):
+            user = self.context.get('request').user
+        else:
+            return False
 
         if user.is_anonymous or (user == obj):
             return False
@@ -220,17 +194,6 @@ class UserSubscribeSerializer(UserSerializer):
         )
         read_only_fields = '__all__',
 
-    def get_is_subscribed(*args) -> bool:
-        """Проверка подписки пользователей.
-
-        Переопределённый метод родительского класса для уменьшения нагрузки,
-        так как в текущей реализации всегда вернёт `True`.
-
-        Returns:
-            bool: True
-        """
-        return True
-
     def get_recipes_count(self, obj: User) -> int:
         """ Показывает общее количество рецептов у каждого автора.
 
@@ -241,3 +204,33 @@ class UserSubscribeSerializer(UserSerializer):
             int: Количество рецептов созданных запрошенным пользователем.
         """
         return obj.recipes.count()
+
+
+class RecipeReadSerializer(serializers.ModelSerializer):
+
+    tags = TagSerializer(
+        many=True,
+        read_only=True,
+    )
+
+    ingredients = IngredientSerializer(
+        many=True,
+        read_only=True,
+    )
+    image = serializers.ImageField(required=True)
+    author = UserSerializer()
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        )

@@ -65,7 +65,7 @@ DATABASES = {
         ),
         'NAME': os.getenv(
             'DB_NAME',
-            default='food',
+            default='food2',
         ),
         'USER': os.getenv(
             'POSTGRES_USER',
@@ -138,7 +138,7 @@ DJOSER = {
     },
 }
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'users.myUser'
 AUTH_MAX_LENGTH = 100
 
 REST_FRAMEWORK = {

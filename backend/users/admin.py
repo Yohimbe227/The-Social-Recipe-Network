@@ -1,9 +1,9 @@
 from django.contrib.admin import register
 from django.contrib.auth.admin import UserAdmin
-from users.models import User
+from users.models import MyUser
 
 
-@register(User)
+@register(MyUser)
 class MyUserAdmin(UserAdmin):
     list_display = (
         'is_active', 'username', 'first_name', 'last_name', 'email',

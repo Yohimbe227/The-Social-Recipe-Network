@@ -1,7 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from backend.settings import NAME_MAX_LENGTH, UNIT_MAX_LENGTH
-from users.models import User
+User = get_user_model()
 
 
 class Ingredient(models.Model):
@@ -43,6 +44,7 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name="автор",
+        related_name='recipes',
         null=True,
     )
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)

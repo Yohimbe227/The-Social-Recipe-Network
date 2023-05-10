@@ -1,41 +1,83 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import Q, F
+from django.db.models import Q, F, CheckConstraint
+from django.db.models.functions import Length
 
 from backend import settings
 
+models.CharField.register_lookup(Length)
 
-class User(AbstractUser):
+
+class MyUser(AbstractUser):
+
     email = models.EmailField(
-        verbose_name='email address',
-        max_length=settings.AUTH_MAX_LENGTH,
+        verbose_name='адрес электронной почты',
+        max_length=256,
         unique=True,
+        # help_text=texsts.USERS_HELP_EMAIL,
+    )
+    username = models.CharField(
+        verbose_name='юзернейм',
+        max_length=256,
+        unique=True,
+        # help_text=texsts.USERS_HELP_UNAME,
+        # validators=(
+        #     MinLenValidator(
+        #         min_len=3,
+        #         field='username',
+        #     ),
+        # ),
     )
     first_name = models.CharField(
-        verbose_name='имя',
-        max_length=settings.AUTH_MAX_LENGTH,
+        verbose_name='Имя',
+        max_length=256
+        # help_text=texsts.USERS_HELP_FNAME,
     )
     last_name = models.CharField(
-        verbose_name='фамилия',
-        max_length=settings.AUTH_MAX_LENGTH,
+        verbose_name='Фамилия',
+        max_length=256,
+        # help_text=texsts.USERS_HELP_FNAME,
+        # validators=(OneOfTwoValidator(
+        #     first_regex='[^а-яёА-ЯЁ -]+',
+        #     second_regex='[^a-zA-Z -]+',
+        #     field='Фамилия'),
+        # ),
     )
-    is_subscribed = models.BooleanField(blank=True, default=False)
+    # password = models.CharField(
+    #     verbose_name='Пароль',
+    #     max_length=128,
+    #     # help_text=texsts.USERS_HELP_FNAME,
+    # )
+    is_active = models.BooleanField(
+        verbose_name='Активирован',
+        default=True,
+    )
 
-    USERNAME_FIELD = 'email'
-    EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
+        constraints = (
+            CheckConstraint(
+                check=Q(username__length__gte=3),
+                name='username is too short',
+            ),
+        )
+
+    def __str__(self) -> str:
+        return f'{self.username}: {self.email}'
 
 
 class Subscriptions(models.Model):
 
     author = models.ForeignKey(
-        User,
+        MyUser,
         verbose_name='автор рецепта',
         related_name='subscribers',
         on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
-        User,
+        MyUser,
         verbose_name='подписчики',
         related_name='subscriptions',
         on_delete=models.CASCADE,
@@ -61,4 +103,4 @@ class Subscriptions(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.user.username} -> {self.author.username}'
+        return f'{self.user.username} подписан на {self.author.username}'

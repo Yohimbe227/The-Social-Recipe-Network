@@ -1,6 +1,6 @@
 from django.http import HttpRequest
 from rest_framework import permissions
-from reviews.models import User
+
 
 
 class IsAdminUser(permissions.BasePermission):
