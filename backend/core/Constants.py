@@ -10,6 +10,6 @@ SYMBOL_TRUE_SEARCH = ('1', 'true')
 # Например только не избранное: `is_favorited=0`
 SYMBOL_FALSE_SEARCH = ('0', 'false')
 ADD_METHODS = ('GET', 'POST')
-DEL_METHODS = ('DELETE',),
+DEL_METHODS = ('DELETE',)
 ACTION_METHODS = ('GET', 'POST', 'DELETE')
 UPDATE_METHODS = ('PUT', 'PATCH')

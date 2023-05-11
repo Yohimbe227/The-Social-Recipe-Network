@@ -63,5 +63,4 @@ class AddDelView:
         if (self.request.method in DEL_METHODS) and m2m_obj:
             m2m_obj[0].delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'errors': f'Вы не подписаны на {obj.username}'}, status=status.HTTP_400_BAD_REQUEST)

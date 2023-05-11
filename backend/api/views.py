@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.http import HttpRequest
-from rest_framework import status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny, IsAuthenticated, \
@@ -12,10 +13,11 @@ from rest_framework.routers import APIRootView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from djoser.views import UserViewSet as DjoserUserViewSet
 
+from api.permissions import AdminOrReadOnly
 from core.classes import AddDelView
-from recipes.models import Recipe, Tag
+from recipes.models import Recipe, Tag, Ingredient
 from api.serializers import RecipeReadSerializer, RecipeWriteSerializer, \
-    TagSerializer, UserSubscribeSerializer
+    TagSerializer, UserSubscribeSerializer, IngredientSerializer
 from recipes.pagination import PageLimitPagination
 from users.models import Subscriptions
 
@@ -101,10 +103,10 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
     """
     pagination_class = PageLimitPagination
     add_serializer = UserSubscribeSerializer
-    permission_classes = (DjangoModelPermissions,)
+    permission_classes = (IsAuthenticated,)
 
     @action(
-        methods=('post', 'del', 'get'),
+        methods=('post', 'delete', 'get'),
         detail=True,
         permission_classes=(IsAuthenticated,)
     )
@@ -128,7 +130,7 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
     def subscriptions(self, request: HttpRequest) -> Response:
         """Список подписок пользоваетеля.
 
-        Вызов метода через url: */user/<int:id>/subscribtions/.
+        Вызов метода через url: */user/<int:id>/subscriptions/.
 
         Args:
             request (HttpRequest): Объект запроса.
@@ -137,6 +139,7 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
             Responce:
                 401 - для неавторизованного пользователя.
                 Список подписок для авторизованного пользователя.
+
         """
         if self.request.user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -155,4 +158,17 @@ class TagViewSet(ReadOnlyModelViewSet):
     """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    # permission_classes = (AdminOrReadOnly,)
+    permission_classes = (AdminOrReadOnly,)
+
+
+class IngredientViewSet(ReadOnlyModelViewSet):
+    """Работает с тэгами.
+
+    Изменение и создание тэгов разрешено только админам.
+    """
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    permission_classes = (AdminOrReadOnly,)
+    pagination_class = None
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name', )

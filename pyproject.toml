@@ -17,6 +17,7 @@ django-filter = "^23.2"
 django-shortcuts = "^1.6"
 drf-writable-nested = "^0.7.0"
 psycopg2 = "^2.9.6"
+drf-extra-fields = "^3.4.1"
 
 
 [build-system]

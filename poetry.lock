@@ -473,6 +473,25 @@ django = ">=3.0"
 pytz = "*"
 
 [[package]]
+name = "drf-extra-fields"
+version = "3.4.1"
+description = "Additional fields for Django Rest Framework."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "drf-extra-fields-3.4.1.tar.gz", hash = "sha256:54df0bef56c38ec7efb40e146ada42fa734b5087e45e9e54b2fd23baccc41466"},
+    {file = "drf_extra_fields-3.4.1-py3-none-any.whl", hash = "sha256:a11aeecc85847b0acda6ce57bb144c584c8ebb43ecdf989d8caa7bb130090885"},
+]
+
+[package.dependencies]
+Django = ">=2.2"
+djangorestframework = ">=3.9.2"
+
+[package.extras]
+base64imagefield = ["Pillow (>=6.2.1)"]
+
+[[package]]
 name = "drf-writable-nested"
 version = "0.7.0"
 description = "Writable nested helpers for django-rest-framework's serializers"
@@ -1555,4 +1574,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "80c5e9cd16e0b780dfda3c19547f6b83ade2ed62ad7a559242aecd248ce3504f"
+content-hash = "ea9084519731d026af419ea1e0ac90437f6bd4014aae3d17da2077d8068bddda"
