@@ -151,7 +151,9 @@ class Recipe(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.name}. Автор: {self.author.username}'
+        if self.author:
+            return f'{self.name}. Автор: {self.author.username}'
+        return f'{self.name}. Автор был удален'
 
     def clean(self) -> None:
         self.name = self.name.capitalize()

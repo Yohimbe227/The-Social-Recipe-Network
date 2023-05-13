@@ -1,0 +1,7 @@
+from rest_framework import filters
+
+
+class IngredientFilterBackend(filters.BaseFilterBackend):
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(name__icontains=request.query_params.get('name'))

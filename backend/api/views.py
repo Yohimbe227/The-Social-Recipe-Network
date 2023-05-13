@@ -1,5 +1,9 @@
 from datetime import datetime as dt
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import ValidationError
+
+from api.filters import IngredientFilterBackend
 from api.permissions import AdminOrReadOnly, AuthorAdminOrReadOnly, \
     AuthorUserOrReadOnly, PostDelIfAuthentificated, GetAllowAny
 from api.serializers import (IngredientSerializer, RecipeSerializer,
@@ -9,15 +13,16 @@ from backend.settings import DATE_TIME_FORMAT
 from core.classes import AddDelView
 from core.constants import (SYMBOL_FALSE_SEARCH, SYMBOL_TRUE_SEARCH, Queries)
 from django.contrib.auth import get_user_model
-from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import F, Q, QuerySet, Sum
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
+
+from core.validators import tags_exist_validator, ingredients_validator
 from recipes.models import Carts, Favorites, Ingredient, Recipe, Tag
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.routers import APIRootView
 from rest_framework.status import HTTP_400_BAD_REQUEST
@@ -54,7 +59,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
             `QuerySet`: Список запрошенных объектов.
         """
         queryset = self.queryset
-
+        print(queryset)
         tags: list = self.request.query_params.getlist(Queries.TAGS)
         if tags:
             queryset = queryset.filter(tags__slug__in=tags).distinct()
@@ -95,22 +100,21 @@ class RecipeViewSet(ModelViewSet, AddDelView):
 
         Returns:
             Responce: Статус подтверждающий/отклоняющий действие.
+
         """
         return self._add_del_obj(pk, Favorites, Q(recipe__id=pk))
 
     @action(
         methods=(
-            "get",
-            "post",
-            "delete",
+            'get',
+            'post',
+            'delete',
         ),
         detail=True,
         permission_classes=(IsAuthenticated,),
     )
     def shopping_cart(self, request: HttpRequest, pk: int | str) -> Response:
         """Добавляет/удалет рецепт в `список покупок`.
-
-        Вызов метода через url: */recipe/<int:pk>/shopping_cart/.
 
         Args:
             request: Объект запроса.
@@ -143,8 +147,8 @@ class RecipeViewSet(ModelViewSet, AddDelView):
 
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = [
-            f'Список покупок для:\n{user.first_name}'
-            f'{dt.now().strftime(DATE_TIME_FORMAT)}\n'
+            f'Список покупок для: {user.first_name} '
+            f'\n{dt.now().strftime(DATE_TIME_FORMAT)}\n'
         ]
 
         ingredients = (
@@ -156,7 +160,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         for ing in ingredients:
             shopping_list.append(f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}')
 
-        shopping_list.append('\nПосчитано в Foodgram')
+        shopping_list.append('\nХороших покупок!')
         shopping_list = '\n'.join(shopping_list)
         response = HttpResponse(shopping_list, content_type='text.txt; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename={filename}'
@@ -170,9 +174,8 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
     регистрация.
     Для авторизованных пользователей —
     возможность подписаться на автора рецепта.
-    """
 
-    pagination_class = PageLimitPagination
+    """
     add_serializer = UserSubscribeSerializer
     permission_classes = (AuthorUserOrReadOnly,)
 
@@ -224,7 +227,7 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
     @action(['get', ], detail=False, permission_classes=(IsAuthenticated,))
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
-        if request.method == "GET":
+        if request.method == 'GET':
             return self.retrieve(request, *args, **kwargs)
 
 
@@ -232,8 +235,8 @@ class TagViewSet(ReadOnlyModelViewSet):
     """Работает с тэгами.
 
     Изменение и создание тэгов разрешено только админам.
-    """
 
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (GetAllowAny,)
@@ -241,14 +244,14 @@ class TagViewSet(ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
-    """Работает с тэгами.
+    """Работает с ингридиентами.
 
     Изменение и создание тэгов разрешено только админам.
-    """
 
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
     pagination_class = None
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (IngredientFilterBackend,)
     search_fields = ('name',)

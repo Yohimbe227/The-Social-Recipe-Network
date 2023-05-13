@@ -146,6 +146,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'],
     'PAGE_SIZE': 6,
 }
 DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
