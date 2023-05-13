@@ -17,15 +17,11 @@ def color_validator(color: str) -> str:
             Символы значения выходят за пределы 16-ричной системы.
     """
 
-    color = color.strip(' #')
+    color = color.strip(" #")
     if len(color) not in (3, 6):
-        raise ValidationError(
-            f'Код цвета {color} не правильной длины ({len(color)}).'
-        )
+        raise ValidationError(f"Код цвета {color} не правильной длины ({len(color)}).")
     if not set(color).issubset(hexdigits):
-        raise ValidationError(
-            f'{color} не шестнадцатиричное.'
-        )
+        raise ValidationError(f"{color} не шестнадцатиричное.")
     if len(color) == 3:
-        return f'#{color[0] * 2}{color[1] * 2}{color[2] * 2}'.upper()
-    return '#' + color.upper()
+        return f"#{color[0] * 2}{color[1] * 2}{color[2] * 2}".upper()
+    return "#" + color.upper()
