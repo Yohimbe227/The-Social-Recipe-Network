@@ -1,39 +1,43 @@
 from datetime import datetime as dt
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.exceptions import ValidationError
-
-from api.filters import IngredientFilterBackend
-from api.permissions import AdminOrReadOnly, AuthorAdminOrReadOnly, \
-    AuthorUserOrReadOnly, PostDelIfAuthentificated, GetAllowAny
-from api.serializers import (IngredientSerializer, RecipeSerializer,
-                             SmallRecipeSerializer, TagSerializer,
-                             UserSubscribeSerializer)
-from backend.settings import DATE_TIME_FORMAT
-from core.classes import AddDelView
-from core.constants import (SYMBOL_FALSE_SEARCH, SYMBOL_TRUE_SEARCH, Queries)
 from django.contrib.auth import get_user_model
 from django.db.models import F, Q, QuerySet, Sum
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
-
-from core.validators import tags_exist_validator, ingredients_validator
-from recipes.models import Carts, Favorites, Ingredient, Recipe, Tag
-from rest_framework import filters, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.routers import APIRootView
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
+from api.filters import IngredientFilterBackend
+from api.permissions import (
+    AdminOrReadOnly,
+    AuthorAdminOrReadOnly,
+    AuthorUserOrReadOnly,
+    GetAllowAny,
+    PostDelIfAuthentificated,
+)
+from api.serializers import (
+    IngredientSerializer,
+    RecipeSerializer,
+    SmallRecipeSerializer,
+    TagSerializer,
+    UserSubscribeSerializer,
+)
+from backend.settings import DATE_TIME_FORMAT
+from core.classes import AddDelView
+from core.constants import (
+    Additional,
+    Methods,
+    Queries,
+)
+from recipes.models import Carts, Favorites, Ingredient, Recipe, Tag
 from users.models import Subscriptions
-from core.constants import Methods
+
 User = get_user_model()
-
-
-class BaseAPIRootView(APIRootView):
-    """Базовые пути API приложения."""
 
 
 class RecipeViewSet(ModelViewSet, AddDelView):
@@ -47,7 +51,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
     Изменять рецепт может только автор или админы.
     """
 
-    queryset = Recipe.objects.select_related('author')
+    queryset = Recipe.objects.select_related("author")
     serializer_class = RecipeSerializer
     permission_classes = (AuthorAdminOrReadOnly,)
     add_serializer = SmallRecipeSerializer
@@ -57,9 +61,9 @@ class RecipeViewSet(ModelViewSet, AddDelView):
 
         Returns:
             `QuerySet`: Список запрошенных объектов.
+
         """
         queryset = self.queryset
-        print(queryset)
         tags: list = self.request.query_params.getlist(Queries.TAGS)
         if tags:
             queryset = queryset.filter(tags__slug__in=tags).distinct()
@@ -72,15 +76,15 @@ class RecipeViewSet(ModelViewSet, AddDelView):
             return queryset
 
         is_in_cart = self.request.query_params.get(Queries.SHOP_CART)
-        if is_in_cart in SYMBOL_TRUE_SEARCH:
+        if is_in_cart in Additional.SYMBOL_TRUE_SEARCH:
             queryset = queryset.filter(in_carts__user=self.request.user)
-        elif is_in_cart in SYMBOL_FALSE_SEARCH:
+        elif is_in_cart in Additional.SYMBOL_FALSE_SEARCH:
             queryset = queryset.exclude(in_carts__user=self.request.user)
 
         is_favorite = self.request.query_params.get(Queries.FAVORITE)
-        if is_favorite in SYMBOL_TRUE_SEARCH:
+        if is_favorite in Additional.SYMBOL_TRUE_SEARCH:
             queryset = queryset.filter(in_favorites__user=self.request.user)
-        if is_favorite in SYMBOL_FALSE_SEARCH:
+        if is_favorite in Additional.SYMBOL_FALSE_SEARCH:
             queryset = queryset.exclude(in_favorites__user=self.request.user)
 
         return queryset
@@ -148,7 +152,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = [
             f'Список покупок для: {user.first_name} '
-            f'\n{dt.now().strftime(DATE_TIME_FORMAT)}\n'
+            f'\n{dt.now().strftime(DATE_TIME_FORMAT)}\n',
         ]
 
         ingredients = (
@@ -158,11 +162,15 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         )
 
         for ing in ingredients:
-            shopping_list.append(f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}')
+            shopping_list.append(
+                f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}',
+            )
 
         shopping_list.append('\nХороших покупок!')
         shopping_list = '\n'.join(shopping_list)
-        response = HttpResponse(shopping_list, content_type='text.txt; charset=utf-8')
+        response = HttpResponse(
+            shopping_list, content_type='text.txt; charset=utf-8',
+        )
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
@@ -176,6 +184,7 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
     возможность подписаться на автора рецепта.
 
     """
+
     add_serializer = UserSubscribeSerializer
     permission_classes = (AuthorUserOrReadOnly,)
 
@@ -219,12 +228,18 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         pages = self.paginate_queryset(
-            User.objects.filter(subscribers__user=self.request.user)
+            User.objects.filter(subscribers__user=self.request.user),
         )
         serializer = UserSubscribeSerializer(pages, many=True)
         return self.get_paginated_response(serializer.data)
 
-    @action(['get', ], detail=False, permission_classes=(IsAuthenticated,))
+    @action(
+        [
+            'get',
+        ],
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+    )
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
         if request.method == 'GET':
@@ -237,6 +252,7 @@ class TagViewSet(ReadOnlyModelViewSet):
     Изменение и создание тэгов разрешено только админам.
 
     """
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (GetAllowAny,)
@@ -249,6 +265,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     Изменение и создание тэгов разрешено только админам.
 
     """
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)

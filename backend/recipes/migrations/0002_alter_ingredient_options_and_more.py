@@ -32,7 +32,9 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(
                 default=1,
                 validators=[
-                    django.core.validators.MinValueValidator(1, "Добавьте что-нибудь!.")
+                    django.core.validators.MinValueValidator(
+                        1, "Добавьте что-нибудь!."
+                    )
                 ],
                 verbose_name="Количество",
             ),
@@ -40,7 +42,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="ingredient",
             name="measurement_unit",
-            field=models.CharField(max_length=24, verbose_name="единицы измерения"),
+            field=models.CharField(
+                max_length=24, verbose_name="единицы измерения"
+            ),
         ),
         migrations.AddConstraint(
             model_name="ingredient",

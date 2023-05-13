@@ -1,6 +1,5 @@
 import csv
 from pathlib import Path
-from typing import List
 
 from django.conf import settings
 from django.core.management import BaseCommand
@@ -13,10 +12,8 @@ def path_become(file_name: str) -> Path:
 
 
 class Command(BaseCommand):
-    # order is really important!
-    files_to_models = (
-        ('ingredients.csv', Ingredient),
-    )
+
+    files_to_models = (("ingredients.csv", Ingredient),)
 
     def check_files(self) -> None:
         """
@@ -28,27 +25,31 @@ class Command(BaseCommand):
 
         Raises:
             FileNotFoundError: Файл не найден.
-        """
 
+        """
         for file_name, _ in self.files_to_models:
             if not path_become(file_name).is_file():
-                raise FileNotFoundError(f'{file_name} not exist')
+                raise FileNotFoundError(f"{file_name} not exist")
 
     def to_base(self):
         """
         Transfer data from csv files in the `static/data` directory
-        to the database. The names of the columns in the files and fields
-        in the corresponding models must match.
+        to the database.
+
         Returns:
             None.
+
         """
         for file_name, model in self.files_to_models:
             file: Path = path_become(file_name)
             date_list = []
-            with open(file, 'r', encoding='utf8') as csv_file:
-                reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            with open(file, "r", encoding="utf8") as csv_file:
+                reader = csv.reader(csv_file, delimiter=",", quotechar='"')
                 for num, row in enumerate(reader):
-                    header = ('name', 'measurement_unit',)
+                    header = (
+                        "name",
+                        "measurement_unit",
+                    )
                     new_date = model(
                         **{key: value for key, value in zip(header, row)},
                     )
@@ -56,16 +57,7 @@ class Command(BaseCommand):
                 model.objects.bulk_create(date_list, ignore_conflicts=True)
 
     def handle(self, *args, **options) -> None:
-        """
-        Handler for the management command `csv_to_base`.
 
-        Args:
-            *args: not used.
-            **options: not used.
-
-        Returns:
-            None.
-        """
         del args, options
         self.check_files()
         self.to_base()

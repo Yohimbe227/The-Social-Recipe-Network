@@ -19,6 +19,11 @@ drf-writable-nested = "^0.7.0"
 psycopg2 = "^2.9.6"
 drf-extra-fields = "^3.4.1"
 isort = "^5.12.0"
+flake8 = "^6.0.0"
+flake8-annotations = "^3.0.1"
+flake8-docstrings = "^1.7.0"
+flake8-quotes = "^3.3.2"
+flake8-commas = "^2.1.0"
 
 
 [build-system]

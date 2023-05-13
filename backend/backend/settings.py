@@ -1,10 +1,11 @@
 import os
-from datetime import timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1'
+SECRET_KEY = (
+    'django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1'
+)
 
 DEBUG = True
 
@@ -124,9 +125,7 @@ DJOSER = {
     'HIDE_USERS': False,
     'PERMISSIONS': {
         'user': ('api.permissions.AuthorUserOrReadOnly',),
-        # 'user_me': ('rest_framework.permissions.AllowAny',),
         'user_list': ('api.permissions.AuthorUserOrReadOnly',),
-        # 'user_list': ('rest_framework.permissions.AllowAny',),
         'token_create': ['rest_framework.permissions.AllowAny'],
     },
     'SERIALIZERS': {
@@ -147,7 +146,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend'],
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
     'PAGE_SIZE': 6,
 }
 DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'

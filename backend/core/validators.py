@@ -15,51 +15,38 @@ def color_validator(color: str) -> str:
             Переданное значение не корректной длины.
         ValidationError:
             Символы значения выходят за пределы 16-ричной системы.
-    """
 
-    color = color.strip(" #")
-    if len(color) not in (3, 6):
-        raise ValidationError(f"Код цвета {color} не правильной длины ({len(color)}).")
+    """
+    color = color.strip(' #')
+    if len(color) != 6:
+        raise ValidationError(
+            f'Код цвета {color} не правильной длины.',
+        )
     if not set(color).issubset(hexdigits):
-        raise ValidationError(f"{color} не шестнадцатиричное.")
+        raise ValidationError(f'{color} не шестнадцатиричное.')
     if len(color) == 3:
-        return f"#{color[0] * 2}{color[1] * 2}{color[2] * 2}".upper()
-    return "#" + color.upper()
+        return f'#{color[0] * 2}{color[1] * 2}{color[2] * 2}'.upper()
+    return '#' + color.upper()
 
-
-def tags_exist_validator(tags_ids: list[int | str], Tag: 'Tag') -> None:
-    """Проверяет наличие тэгов с указанными id.
-
-    Args:
-        tags_ids (list[int | str]): Список id.
-        Tag (Tag): Модель тэгов во избежании цикличного импорта.
-
-    Raises:
-        ValidationError: Тэга с одним из указанных id не существует.
-    """
-    exists_tags = Tag.objects.filter(id__in=tags_ids)
-
-    if len(exists_tags) != len(tags_ids):
-        raise ValidationError('Указан несуществующий тэг')
 
 def ingredients_validator(
-    ingredients: list[dict[str, str | int]],
-    Ingredient: 'Ingredient',
+    ingredients: list[dict[str, str | int], ],
+    Ingredient_: 'Ingredient',
 ) -> dict[int, tuple['Ingredient', int]]:
     """Проверяет список ингридиентов.
 
     Args:
-        ingredients (list[dict[str, str | int]]):
-            Список ингридиентов.
-            Example: [{'amount': '5', 'id': 2073},]
-        Ingredient (Ingredient):
+        ingredients: Список ингридиентов.
+
+        Ingredient_:
             Модель ингридиентов во избежании цикличного импорта.
 
     Raises:
         ValidationError: Ошибка в переданном списке ингридиентов.
 
     Returns:
-        dict[int, tuple[Ingredient, int]]:
+        Валидированые ингридиенты.
+
     """
     valid_ings = {}
 
@@ -76,7 +63,7 @@ def ingredients_validator(
     if not valid_ings:
         raise ValidationError('Неправильные ингидиенты')
 
-    db_ings = Ingredient.objects.filter(pk__in=valid_ings.keys())
+    db_ings = Ingredient_.objects.filter(pk__in=valid_ings.keys())
     if not db_ings:
         raise ValidationError('Неправильные ингидиенты')
 

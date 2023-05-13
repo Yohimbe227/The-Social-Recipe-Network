@@ -1,14 +1,17 @@
-from PIL import Image
-
-from core.validators import color_validator
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import PositiveSmallIntegerField, UniqueConstraint, \
-    CheckConstraint, Q
+from django.db.models import (
+    CheckConstraint,
+    PositiveSmallIntegerField,
+    Q,
+    UniqueConstraint,
+)
+from PIL import Image
 
-from backend.settings import NAME_MAX_LENGTH, UNIT_MAX_LENGTH
-from core.constants import Limits, RECIPE_IMAGE_SIZE
+from backend.settings import NAME_MAX_LENGTH
+from core.constants import Additional, Limits
+from core.validators import color_validator
 
 User = get_user_model()
 
@@ -26,6 +29,7 @@ class Ingredient(models.Model):
             Единицы измерения ингридентов (граммы, штуки, литры и т.п.).
             Установлены ограничения по длине.
     """
+
     name = models.CharField(
         verbose_name='ингридиент',
         max_length=Limits.MAX_LEN_RECIPES_CHARFIELD,
@@ -38,11 +42,11 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'ингридиент'
         verbose_name_plural = 'ингридиенты'
-        ordering = ('name', )
+        ordering = ('name',)
         constraints = (
             UniqueConstraint(
                 fields=('name', 'measurement_unit'),
-                name='unique_for_ingredient'
+                name='unique_for_ingredient',
             ),
             CheckConstraint(
                 check=Q(name__length__gt=0),
@@ -138,7 +142,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('-pub_date', )
+        ordering = ('-pub_date',)
         constraints = (
             UniqueConstraint(
                 fields=('name', 'author'),
@@ -162,7 +166,7 @@ class Recipe(models.Model):
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
         image = Image.open(self.image.path)
-        image = image.resize(RECIPE_IMAGE_SIZE)
+        image = image.resize(Additional.RECIPE_IMAGE_SIZE)
         image.save(self.image.path)
 
 
@@ -191,7 +195,7 @@ class AmountIngredient(models.Model):
         validators=(
             MinValueValidator(
                 1,
-                'Добавьте что-нибудь!.',
+                'Добавьте что-нибудь!',
             ),
         ),
     )
@@ -206,7 +210,7 @@ class AmountIngredient(models.Model):
                     'recipe',
                     'ingredients',
                 ),
-                name='%(app_label)s_%(class)s ingredient alredy added',
+                name='%(app_label)s_%(class)s ингредиенты добавлены',
             ),
         )
 
@@ -234,7 +238,7 @@ class Favorites(models.Model):
         on_delete=models.CASCADE,
     )
     date_added = models.DateTimeField(
-        verbose_name='дата добавления', auto_now_add=True, editable=False
+        verbose_name='дата добавления', auto_now_add=True, editable=False,
     )
 
     class Meta:
@@ -246,7 +250,7 @@ class Favorites(models.Model):
                     'recipe',
                     'user',
                 ),
-                name='%(app_label)s_%(class)s recipe is favorite alredy',
+                name='%(app_label)s_%(class)s рецепт уже в избранном',
             ),
         )
 
@@ -282,7 +286,7 @@ class Carts(models.Model):
         on_delete=models.CASCADE,
     )
     date_added = models.DateTimeField(
-        verbose_name='Дата добавления', auto_now_add=True, editable=False
+        verbose_name='Дата добавления', auto_now_add=True, editable=False,
     )
 
     class Meta:
@@ -299,4 +303,4 @@ class Carts(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.user} -> {self.recipe}'
+        return f'{self.user} добавил в корзину {self.recipe}'

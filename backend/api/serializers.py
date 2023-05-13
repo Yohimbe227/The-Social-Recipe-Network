@@ -1,18 +1,15 @@
-import base64
-from http import HTTPStatus
-
-from rest_framework.exceptions import ValidationError
-
-from core.utils import recipe_ingredients_set
 from django.contrib.auth import get_user_model
 from django.db.models import F, QuerySet
 from drf_extra_fields.fields import Base64ImageField
-
-from core.validators import tags_exist_validator, ingredients_validator
-from recipes.models import Ingredient, Recipe, Tag
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
+
+from core.utils import recipe_ingredients_set
+# from core.validators import ingredients_validator, tags_exist_validator
+from core.validators import ingredients_validator
+from recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
@@ -21,6 +18,7 @@ class SmallRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Recipe.
 
     Уменьшенный набор полей для некоторых эндпоинтов.
+
     """
 
     class Meta:
@@ -63,7 +61,7 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = '__all__'
-        read_only_fields = '__all__',
+        read_only_fields = ('__all__',)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -177,12 +175,12 @@ class RecipeSerializer(ModelSerializer):
 
         """
         ingredients = recipe.ingredients.values(
-            'id', 'name', 'measurement_unit', amount=F('recipe__amount')
+            'id', 'name', 'measurement_unit', amount=F('recipe__amount'),
         )
         return ingredients
 
     def get_is_favorited(self, recipe: Recipe) -> bool:
-        """Проверка - находится ли рецепт в избранном.
+        """Проверка - есть ли рецепт в избранном.
 
         Args:
             recipe (Recipe): Переданный для проверки рецепт.
@@ -190,8 +188,9 @@ class RecipeSerializer(ModelSerializer):
         Returns:
             bool: True - если рецепт в `избранном`
             у запращивающего пользователя, иначе - False.
+
         """
-        user = self.context.get("view").request.user
+        user = self.context.get('view').request.user
 
         if user.is_anonymous:
             return False
@@ -199,7 +198,7 @@ class RecipeSerializer(ModelSerializer):
         return user.favorites.filter(recipe=recipe).exists()
 
     def get_is_in_shopping_cart(self, recipe: Recipe) -> bool:
-        """Проверка - находится ли рецепт в списке  покупок.
+        """Проверка - есть ли рецепт в списке  покупок.
 
         Args:
             recipe: Переданный для проверки рецепт.
@@ -207,6 +206,7 @@ class RecipeSerializer(ModelSerializer):
         Returns:
             True - если рецепт в `списке покупок`
             у запращивающего пользователя, иначе - False.
+
         """
         user = self.context.get('view').request.user
 
@@ -219,13 +219,13 @@ class RecipeSerializer(ModelSerializer):
         """Проверка вводных данных при создании/редактировании рецепта.
 
         Args:
-            data (OrderedDict): Вводные данные.
+            data: Входные данные.
 
         Raises:
             ValidationError: Тип данных несоответствует ожидаемому.
 
         Returns:
-            data (dict): Проверенные данные.
+            data: Проверенные данные.
 
         """
         tags_ids: list[int] = self.initial_data.get('tags')
@@ -234,26 +234,19 @@ class RecipeSerializer(ModelSerializer):
         if not tags_ids or not ingredients:
             raise ValidationError('Недостаточно данных.')
 
-        tags_exist_validator(tags_ids, Tag)
         ingredients = ingredients_validator(ingredients, Ingredient)
 
-        data.update({
-            'tags': tags_ids,
-            'ingredients': ingredients,
-            'author': self.context.get('request').user
-        })
+        data.update(
+            {
+                'tags': tags_ids,
+                'ingredients': ingredients,
+                'author': self.context.get('request').user,
+            },
+        )
         return data
 
     def create(self, validated_data: dict) -> Recipe:
-        """Создаёт рецепт.
 
-        Args:
-            validated_data: Данные для создания рецепта.
-
-        Returns:
-            Recipe: Созданый рецепт.
-
-        """
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
@@ -262,15 +255,7 @@ class RecipeSerializer(ModelSerializer):
         return recipe
 
     def update(self, recipe: Recipe, validated_data: dict):
-        """Обновляет рецепт.
 
-        Args:
-            recipe (Recipe): Рецепт для изменения.
-            validated_data (dict): Изменённые данные.
-
-        Returns:
-            Recipe: Обновлённый рецепт.
-        """
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
 
@@ -324,12 +309,5 @@ class UserSubscribeSerializer(UserSerializer):
         read_only_fields = ('__all__',)
 
     def get_recipes_count(self, obj: User) -> int:
-        """Показывает общее количество рецептов у каждого автора.
 
-        Args:
-            obj (User): Запрошенный пользователь.
-
-        Returns:
-            int: Количество рецептов созданных запрошенным пользователем.
-        """
         return obj.recipes.count()
