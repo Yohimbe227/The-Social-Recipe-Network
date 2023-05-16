@@ -10,8 +10,8 @@ from django.utils.safestring import mark_safe
 
 from recipes.models import (
     AmountIngredient,
-    Carts,
-    Favorites,
+    Cart,
+    Favorite,
     Ingredient,
     Recipe,
     Tag,
@@ -103,23 +103,23 @@ class TagAdmin(ModelAdmin):
     color_code.short_description = 'Цветовой код тэга'
 
 
-@register(Favorites)
+@register(Favorite)
 class FavoriteAdmin(ModelAdmin):
     list_display = ('user', 'recipe', 'date_added')
     search_fields = ('user__username', 'recipe__name')
 
     def has_change_permission(
-        self, request: HttpRequest, obj: Favorites | None = None,
+        self, request: HttpRequest, obj: Favorite | None = None,
     ) -> bool:
         return False
 
     def has_delete_permission(
-        self, request: HttpRequest, obj: Favorites | None = None,
+        self, request: HttpRequest, obj: Favorite | None = None,
     ) -> bool:
         return False
 
 
-@register(Carts)
+@register(Cart)
 class CardAdmin(ModelAdmin):
     list_display = ('user', 'recipe', 'date_added')
     search_fields = ('user__username', 'recipe__name')

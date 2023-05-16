@@ -50,7 +50,6 @@ class Limits:
 
 class Queries:
     def __setattr__(self, name, value):
-        del value
         raise AttributeError(f"can't reassign constant '{name}'")
 
     # Параметр для поиска ингридиентов по вхождению значения в название

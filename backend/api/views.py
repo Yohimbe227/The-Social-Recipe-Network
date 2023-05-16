@@ -1,9 +1,8 @@
-from datetime import datetime as dt
-
 from django.contrib.auth import get_user_model
 from django.db.models import F, Q, QuerySet, Sum
 from django.http import HttpRequest
 from django.http.response import HttpResponse
+from django.utils import timezone
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -22,10 +21,10 @@ from api.permissions import (
 )
 from api.serializers import (
     IngredientSerializer,
-    RecipeSerializer,
+    RecipeReadSerializer,
     SmallRecipeSerializer,
     TagSerializer,
-    UserSubscribeSerializer,
+    UserSubscribeSerializer, RecipeWriteSerializer,
 )
 from backend.settings import DATE_TIME_FORMAT
 from core.classes import AddDelView
@@ -34,7 +33,7 @@ from core.constants import (
     Methods,
     Queries,
 )
-from recipes.models import Carts, Favorites, Ingredient, Recipe, Tag
+from recipes.models import Cart, Favorite, Ingredient, Recipe, Tag
 from users.models import Subscriptions
 
 User = get_user_model()
@@ -49,10 +48,9 @@ class RecipeViewSet(ModelViewSet, AddDelView):
     Для авторизованных пользователей — возможность добавить
     рецепт в избранное и в список покупок.
     Изменять рецепт может только автор или админы.
-    """
 
-    queryset = Recipe.objects.select_related("author")
-    serializer_class = RecipeSerializer
+    """
+    queryset = Recipe.objects.select_related('author')
     permission_classes = (AuthorAdminOrReadOnly,)
     add_serializer = SmallRecipeSerializer
 
@@ -106,7 +104,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
             Responce: Статус подтверждающий/отклоняющий действие.
 
         """
-        return self._add_del_obj(pk, Favorites, Q(recipe__id=pk))
+        return self._add_del_obj(pk, Favorite, Q(recipe__id=pk))
 
     @action(
         methods=(
@@ -128,7 +126,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
             Responce: Статус подтверждающий/отклоняющий действие.
 
         """
-        return self._add_del_obj(pk, Carts, Q(recipe__id=pk))
+        return self._add_del_obj(pk, Cart, Q(recipe__id=pk))
 
     @action(methods=('get',), detail=False)
     def download_shopping_cart(self, request: HttpRequest) -> HttpResponse:
@@ -152,7 +150,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = [
             f'Список покупок для: {user.first_name} '
-            f'\n{dt.now().strftime(DATE_TIME_FORMAT)}\n',
+            f'\n{timezone.now().strftime(DATE_TIME_FORMAT)}\n',
         ]
 
         ingredients = (
@@ -174,6 +172,20 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
+    def get_serializer_class(self) -> [RecipeReadSerializer | RecipeWriteSerializer]:
+        """Call the desired serializer depending on the type of query.
+
+        Returns:
+            Desired serializer.
+
+        """
+        if self.action in (
+            'list',
+            'retrieve',
+        ):
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
+
 
 class UserViewSet(DjoserUserViewSet, AddDelView):
     """Работает с пользователями.
@@ -184,7 +196,6 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
     возможность подписаться на автора рецепта.
 
     """
-
     add_serializer = UserSubscribeSerializer
     permission_classes = (AuthorUserOrReadOnly,)
 
@@ -206,6 +217,7 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
 
         Returns:
             Responce: Статус подтверждающий/отклоняющий действие.
+
         """
         return self._add_del_obj(id, Subscriptions, Q(author__id=id))
 
@@ -234,16 +246,13 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
         return self.get_paginated_response(serializer.data)
 
     @action(
-        [
-            'get',
-        ],
+        ['get', ],
         detail=False,
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
-        if request.method == 'GET':
-            return self.retrieve(request, *args, **kwargs)
+        return self.retrieve(request, *args, **kwargs)
 
 
 class TagViewSet(ReadOnlyModelViewSet):

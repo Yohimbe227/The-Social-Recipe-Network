@@ -101,7 +101,7 @@ class Recipe(models.Model):
         null=True,
     )
     tags = models.ManyToManyField(
-        'Tag',
+        Tag,
         verbose_name='тэг',
         related_name='recipes',
     )
@@ -180,13 +180,13 @@ class AmountIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='В каких рецептах',
-        related_name='ingredient',
+        related_name='ingredientrecipes',
         on_delete=models.CASCADE,
     )
     ingredients = models.ForeignKey(
         Ingredient,
         verbose_name='Связанные ингредиенты',
-        related_name='recipe',
+        related_name='ingredientrecipes',
         on_delete=models.CASCADE,
     )
     amount = models.PositiveSmallIntegerField(
@@ -215,10 +215,10 @@ class AmountIngredient(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.amount} {self.ingredients}'
+        return f'{self.amount} {self.ingredient}'
 
 
-class Favorites(models.Model):
+class Favorite(models.Model):
     """Избранные рецепты.
 
     Модель связывает Recipe и  User.
@@ -242,8 +242,8 @@ class Favorites(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Избранный рецепт'
-        verbose_name_plural = 'Избранные рецепты'
+        verbose_name = 'избранный рецепт'
+        verbose_name_plural = 'избранные рецепты'
         constraints = (
             UniqueConstraint(
                 fields=(
@@ -258,30 +258,22 @@ class Favorites(models.Model):
         return f'{self.user} -> {self.recipe}'
 
 
-class Carts(models.Model):
+class Cart(models.Model):
     """Рецепты в корзине покупок.
 
     Модель связывает Recipe и  User.
-
-    Attributes:
-        recipe(int):
-            Связаный рецепт. Связь через ForeignKey.
-        user(int):
-            Связаный пользователь. Связь через ForeignKey.
-        date_added(datetime):
-            Дата добавления рецепта в корзину.
 
     """
 
     recipe = models.ForeignKey(
         verbose_name='рецепты в списке покупок',
-        related_name='in_carts',
+        related_name='shopping_cart',
         to=Recipe,
         on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
         verbose_name='владелец списка',
-        related_name='carts',
+        related_name='shopping_cart',
         to=User,
         on_delete=models.CASCADE,
     )

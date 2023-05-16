@@ -1,11 +1,14 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = (
-    'django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1'
-)
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    default='django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1')
 
 DEBUG = True
 
@@ -105,8 +108,6 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
-
-USE_I18N = True
 
 USE_TZ = True
 
