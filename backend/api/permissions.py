@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import permissions
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.routers import APIRootView
 
 User = get_user_model()
@@ -12,34 +11,15 @@ class AdminOrReadOnly(BasePermission):
     """Access level.
 
     Get method is available for all users,
-    PATCH, DELETE - only for administrator
+    PATCH, POST, DELETE - only for administrator
 
     """
 
     def has_permission(self, request: HttpRequest, view: APIRootView) -> bool:
-        del view
-        if request.user.is_authenticated and request.method in (
-            'PATCH',
-            'POST',
-            'DELETE',
-        ):
-            return request.user.is_staff
-        return request.method == 'GET'
+        return request.method in SAFE_METHODS or request.user.is_staff
 
 
-class GetAllowAny(BasePermission):
-    """Access level.
-
-    Only Get method is available for all users,
-
-    """
-
-    def has_permission(self, request: HttpRequest, view: APIRootView) -> bool:
-        del view
-        return request.method == 'GET'
-
-
-class AuthorAdminOrReadOnly(BasePermission):
+class AuthorOrReadOnly(BasePermission):
     """
     Get method is available for all users.
 
@@ -47,8 +27,7 @@ class AuthorAdminOrReadOnly(BasePermission):
 
     """
 
-    def has_permission(self, request: HttpRequest, view: any) -> bool:
-        del view
+    def has_permission(self, request: HttpRequest, view: APIRootView) -> bool:
         return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
@@ -63,43 +42,4 @@ class AuthorAdminOrReadOnly(BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
-            or request.user.is_staff
-        )
-
-
-class AuthorUserOrReadOnly(BasePermission):
-    """
-    Разрешение на создание и изменение только для админа и пользователя.
-
-    Остальным только чтение объекта.
-    """
-
-    def has_permission(self, request: HttpRequest, view: any) -> bool:
-        del view
-        return request.method in (
-            'GET',
-            'POST',
-        )
-
-    def has_object_permission(
-        self, request: HttpRequest, view: APIRootView, obj: Model,
-    ) -> bool:
-        return (
-            request.method == 'GET'
-            or request.user.is_staff
-            or (
-                request.user.is_authenticated
-                and request.user.is_active
-                and request.user == obj.author
-                and request.method == 'POST'
-            )
-        )
-
-
-class PostDelIfAuthentificated(BasePermission):
-    def has_permission(self, request: HttpRequest, view: APIRootView) -> bool:
-        del view
-        return (
-            request.method in ('POST', 'DELETE')
-            and request.user.is_authenticated
         )

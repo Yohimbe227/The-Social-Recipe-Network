@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,7 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv(
     'SECRET_KEY',
-    default='django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1')
+    default='django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1',
+)
 
 DEBUG = True
 
@@ -125,9 +127,9 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'PERMISSIONS': {
-        'user': ('api.permissions.AuthorUserOrReadOnly',),
-        'user_list': ('api.permissions.AuthorUserOrReadOnly',),
-        'token_create': ['rest_framework.permissions.AllowAny'],
+        'user': ('api.permissions.AuthorOrReadOnly',),
+        'user_list': ('api.permissions.AuthorOrReadOnly',),
+        'token_create': ('rest_framework.permissions.AllowAny',),
     },
     'SERIALIZERS': {
         'user': 'api.serializers.UserSerializer',

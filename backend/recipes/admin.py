@@ -1,13 +1,9 @@
-from django.contrib.admin import (
-    ModelAdmin,
-    TabularInline,
-    display,
-    register,
-)
+from django.contrib.admin import ModelAdmin, TabularInline, display, register
 from django.http import HttpRequest
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
+from recipes.forms import TagForm
 from recipes.models import (
     AmountIngredient,
     Cart,
@@ -85,6 +81,7 @@ class RecipeAdmin(ModelAdmin):
 
 @register(Tag)
 class TagAdmin(ModelAdmin):
+    form = TagForm
     list_display = (
         'name',
         'slug',
@@ -97,7 +94,9 @@ class TagAdmin(ModelAdmin):
     @display(description='Colored')
     def color_code(self, obj: Tag):
         return format_html(
-            "<span style='color: #{};'>{}</span>", obj.color[1:], obj.color,
+            "<span style='color: #{};'>{}</span>",
+            obj.color[1:],
+            obj.color,
         )
 
     color_code.short_description = 'Цветовой код тэга'
@@ -109,12 +108,16 @@ class FavoriteAdmin(ModelAdmin):
     search_fields = ('user__username', 'recipe__name')
 
     def has_change_permission(
-        self, request: HttpRequest, obj: Favorite | None = None,
+        self,
+        request: HttpRequest,
+        obj: Favorite | None = None,
     ) -> bool:
         return False
 
     def has_delete_permission(
-        self, request: HttpRequest, obj: Favorite | None = None,
+        self,
+        request: HttpRequest,
+        obj: Favorite | None = None,
     ) -> bool:
         return False
 

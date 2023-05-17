@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -22,12 +24,13 @@ class Ingredient(models.Model):
     Связано с моделью Recipe через М2М (AmountIngredient).
 
     Attributes:
-        name(str):
+        name:
             Название ингридиента.
             Установлены ограничения по длине и уникальности.
         measurement_unit:
             Единицы измерения ингридентов (граммы, штуки, литры и т.п.).
             Установлены ограничения по длине.
+
     """
 
     name = models.CharField(
@@ -118,7 +121,7 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         verbose_name='изображение блюда',
-        upload_to='mediafiles/',
+        upload_to='',
     )
     text = models.TextField(
         verbose_name='описание блюда',
@@ -169,6 +172,10 @@ class Recipe(models.Model):
         image = image.resize(Additional.RECIPE_IMAGE_SIZE)
         image.save(self.image.path)
 
+    def delete(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        os.remove(self.image.path)
+
 
 class AmountIngredient(models.Model):
     """Количество ингридиентов в блюде.
@@ -215,7 +222,7 @@ class AmountIngredient(models.Model):
         )
 
     def __str__(self) -> str:
-        return f'{self.amount} {self.ingredient}'
+        return f'{self.amount} {self.ingredients}'
 
 
 class Favorite(models.Model):
@@ -238,7 +245,9 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
     )
     date_added = models.DateTimeField(
-        verbose_name='дата добавления', auto_now_add=True, editable=False,
+        verbose_name='дата добавления',
+        auto_now_add=True,
+        editable=False,
     )
 
     class Meta:
@@ -266,19 +275,21 @@ class Cart(models.Model):
     """
 
     recipe = models.ForeignKey(
+        Recipe,
         verbose_name='рецепты в списке покупок',
         related_name='shopping_cart',
-        to=Recipe,
         on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
+        User,
         verbose_name='владелец списка',
         related_name='shopping_cart',
-        to=User,
         on_delete=models.CASCADE,
     )
     date_added = models.DateTimeField(
-        verbose_name='Дата добавления', auto_now_add=True, editable=False,
+        verbose_name='Дата добавления',
+        auto_now_add=True,
+        editable=False,
     )
 
     class Meta:

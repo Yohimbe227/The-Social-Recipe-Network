@@ -1,17 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.db.models import F, QuerySet
+from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
-from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, IntegerField
+from rest_framework.fields import SerializerMethodField
 from rest_framework.generics import get_object_or_404
 from rest_framework.serializers import ModelSerializer
 
-from core.utils import recipe_ingredients_set
-from core.validators import ingredients_validator
-from recipes.models import Ingredient, Recipe, Tag, AmountIngredient
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 
 User = get_user_model()
 
@@ -30,7 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'is_subscribed',
-            'password',
         )
         extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = ('is_subscribed',)
@@ -62,7 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
         """Создаёт нового пользователя с запрошенными полями.
 
         Args:
-            validated_data (dict): Полученные проверенные данные.
+            validated_data: Полученные проверенные данные.
 
         Returns:
             User: Созданный пользователь.
@@ -79,7 +74,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-
     def validate(self, data: dict) -> dict:
         """Унификация вводных данных при создании/редактировании тэга.
 
@@ -134,7 +128,7 @@ class RecipeReadSerializer(ModelSerializer):
             'id',
             'name',
             'measurement_unit',
-            amount=F('ingredientrecipes__amount')
+            amount=F('ingredientrecipes__amount'),
         )
         return ingredients
 
@@ -162,7 +156,7 @@ class AmountIngredientWriteSerializer(serializers.ModelSerializer):
 class RecipeWriteSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
-        many=True
+        many=True,
     )
     author = UserSerializer(read_only=True)
     ingredients = AmountIngredientWriteSerializer(many=True)
@@ -181,62 +175,63 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    # def validate_ingredients(self, value):
-    #     ingredients = value
-    #     if not ingredients:
-    #         raise ValidationError({
-    #             'ingredients': 'Нужен хотя бы один ингредиент!'
-    #         })
-    #     ingredients_list = []
-    #     for item in ingredients:
-    #         ingredient = get_object_or_404(Ingredient, id=item['id'])
-    #         if ingredient in ingredients_list:
-    #             raise ValidationError({
-    #                 'ingredients': 'Ингридиенты не могут повторяться!'
-    #             })
-    #         if int(item['amount']) <= 0:
-    #             raise ValidationError({
-    #                 'amount': 'Количество ингредиента должно быть больше 0!'
-    #             })
-    #         ingredients_list.append(ingredient)
-    #     return value
+    def validate_ingredients(self, ingredients):
+        if not ingredients:
+            raise ValidationError(
+                {
+                    'ingredients': 'Нужен хотя бы один ингредиент!',
+                },
+            )
+        ingredients_list = []
+        for item in ingredients:
+            ingredient = get_object_or_404(Ingredient, id=item['id'])
+            if ingredient in ingredients_list:
+                raise ValidationError(
+                    {'ingredients': 'Ингридиенты не могут повторяться!'},
+                )
+            if int(item['amount']) <= 0:
+                raise ValidationError(
+                    {
+                        'amount': 'Количество ингредиента должно быть больше 0!',
+                    },
+                )
+            ingredients_list.append(ingredient)
+        return ingredients
 
-    # def validate_tags(self, value):
-    #     tags = value
-    #     if not tags:
-    #         raise ValidationError({
-    #             'tags': 'Нужно выбрать хотя бы один тег!'
-    #         })
-    #     tags_list = []
-    #     for tag in tags:
-    #         if tag in tags_list:
-    #             raise ValidationError({
-    #                 'tags': 'Теги должны быть уникальными!'
-    #             })
-    #         tags_list.append(tag)
-    #     return value
+    def validate_tags(self, tags):
+        if not tags:
+            raise ValidationError({'tags': 'Нужно выбрать хотя бы один тег!'})
+        tags_list = []
+        for tag in tags:
+            if tag in tags_list:
+                raise ValidationError(
+                    {
+                        'tags': 'Теги должны быть уникальными!',
+                    },
+                )
+            tags_list.append(tag)
+        return tags
 
-    @transaction.atomic
     def create_ingredients_amounts(self, ingredients, recipe):
         AmountIngredient.objects.bulk_create(
-            [AmountIngredient(
-                ingredients=Ingredient.objects.get(id=ingredient['id']),
-                recipe=recipe,
-                amount=ingredient['amount']
-            ) for ingredient in ingredients]
+            [
+                AmountIngredient(
+                    ingredients=Ingredient.objects.get(id=ingredient['id']),
+                    recipe=recipe,
+                    amount=ingredient['amount'],
+                )
+                for ingredient in ingredients
+            ],
         )
 
-    @transaction.atomic
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.create_ingredients_amounts(recipe=recipe,
-                                        ingredients=ingredients)
+        self.create_ingredients_amounts(recipe=recipe, ingredients=ingredients)
         return recipe
 
-    @transaction.atomic
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
@@ -244,16 +239,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.tags.clear()
         instance.tags.set(tags)
         instance.ingredients.clear()
-        self.create_ingredients_amounts(recipe=instance,
-                                        ingredients=ingredients)
+        self.create_ingredients_amounts(
+            recipe=instance,
+            ingredients=ingredients,
+        )
         instance.save()
         return instance
 
-    # def to_representation(self, instance):
-    #     request = self.context.get('request')
-    #     context = {'request': request}
-    #     return RecipeReadSerializer(instance,
-    #                                 context=context).data
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeReadSerializer(instance, context=context).data
 
 
 class CreateUserSerializer(UserSerializer):
@@ -270,16 +266,18 @@ class CreateUserSerializer(UserSerializer):
 
 
 class SmallRecipeSerializer(ModelSerializer):
+    """Уменьшенный вариант сериалайзера.
+
+    Используется для вывода рецепта в списке авторов, на которые подписан
+    пользователй.
+
+    """
+
     image = Base64ImageField()
 
     class Meta:
         model = Recipe
-        fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time'
-        )
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class UserSubscribeSerializer(UserSerializer):
@@ -304,4 +302,3 @@ class UserSubscribeSerializer(UserSerializer):
 
     def get_recipes_count(self, obj: User) -> int:
         return obj.recipes.count()
-

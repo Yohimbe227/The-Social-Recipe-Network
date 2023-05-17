@@ -43,7 +43,9 @@ class MyUser(AbstractUser):
         )
 
     def __str__(self) -> str:
-        return f'{self.username}: {self.email}'
+        if self:
+            return f'{self.username}: {self.email}'
+        return 'Автор куда-то подевался!'
 
 
 class Subscriptions(models.Model):
