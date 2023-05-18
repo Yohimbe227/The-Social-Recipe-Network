@@ -15,7 +15,7 @@ services:
       - .env
     restart: always
   backend:
-    image: 'yohimbe/foodgram:v1'
+    image: 'yohimbe/backend:v1'
     restart: always
     volumes:
       - 'static_value:/app/static/'
