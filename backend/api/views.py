@@ -274,7 +274,7 @@ class TagViewSet(ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
-    """Работает с ингридиентами.
+    """Работает с ингредиентами.
 
     Изменение и создание тэгов разрешено только админам.
 

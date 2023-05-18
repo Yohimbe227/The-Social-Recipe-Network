@@ -19,22 +19,22 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    """Ингридиенты для рецепта.
+    """ингредиенты для рецепта.
 
     Связано с моделью Recipe через М2М (AmountIngredient).
 
     Attributes:
         name:
-            Название ингридиента.
+            Название ингредиента.
             Установлены ограничения по длине и уникальности.
         measurement_unit:
-            Единицы измерения ингридентов (граммы, штуки, литры и т.п.).
+            Единицы измерения ингредентов (граммы, штуки, литры и т.п.).
             Установлены ограничения по длине.
 
     """
 
     name = models.CharField(
-        verbose_name='ингридиент',
+        verbose_name='ингредиент',
         max_length=Limits.MAX_LEN_RECIPES_CHARFIELD,
     )
     measurement_unit = models.CharField(
@@ -43,8 +43,8 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'ингридиент'
-        verbose_name_plural = 'ингридиенты'
+        verbose_name = 'ингредиент'
+        verbose_name_plural = 'ингредиенты'
         ordering = ('name',)
         constraints = (
             UniqueConstraint(
@@ -178,9 +178,9 @@ class Recipe(models.Model):
 
 
 class AmountIngredient(models.Model):
-    """Количество ингридиентов в блюде.
+    """Количество ингредиентов в блюде.
 
-    Модель связывает Recipe и Ingredient с указанием количества ингридиента.
+    Модель связывает Recipe и Ingredient с указанием количества ингредиента.
 
     """
 
@@ -208,8 +208,8 @@ class AmountIngredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ингридиент'
-        verbose_name_plural = 'Количество ингридиентов'
+        verbose_name = 'ингредиент'
+        verbose_name_plural = 'Количество ингредиентов'
         ordering = ('recipe',)
         constraints = (
             UniqueConstraint(

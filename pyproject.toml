@@ -10,22 +10,25 @@ packages = [{include = "foodgram_project_react"}]
 python = "^3.11"
 django = "^4.2"
 djangorestframework = "^3.14.0"
-black = "^23.3.0"
 poetry = "^1.4.2"
 pillow = "^9.5.0"
 django-filter = "^23.2"
-django-shortcuts = "^1.6"
-drf-writable-nested = "^0.7.0"
 psycopg2 = "^2.9.6"
 drf-extra-fields = "^3.4.1"
+python-dotenv = "^1.0.0"
+djoser = "^2.2.0"
+sorl-thumbnail = "^12.9.0"
+gunicorn = "^20.1.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+django-shortcuts = "^1.6"
 isort = "^5.12.0"
 flake8 = "^6.0.0"
 flake8-annotations = "^3.0.1"
 flake8-docstrings = "^1.7.0"
 flake8-quotes = "^3.3.2"
 flake8-commas = "^2.1.0"
-python-dotenv = "^1.0.0"
-
 
 [build-system]
 requires = ["poetry-core"]

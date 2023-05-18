@@ -187,7 +187,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             ingredient = get_object_or_404(Ingredient, id=item['id'])
             if ingredient in ingredients_list:
                 raise ValidationError(
-                    {'ingredients': 'Ингридиенты не могут повторяться!'},
+                    {'ingredients': 'ингредиенты не могут повторяться!'},
                 )
             if int(item['amount']) <= 0:
                 raise ValidationError(
@@ -243,7 +243,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             recipe=instance,
             ingredients=ingredients,
         )
-        instance.save()
         return instance
 
     def to_representation(self, instance):

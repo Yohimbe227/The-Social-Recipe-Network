@@ -43,8 +43,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "verbose_name": "Ингридиент",
-                "verbose_name_plural": "Количество ингридиентов",
+                "verbose_name": "ингредиент",
+                "verbose_name_plural": "Количество ингредиентов",
                 "ordering": ("recipe",),
             },
         ),
@@ -110,7 +110,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "name",
-                    models.CharField(max_length=64, verbose_name="ингридиент"),
+                    models.CharField(max_length=64, verbose_name="ингредиент"),
                 ),
                 (
                     "measurement_unit",
@@ -120,8 +120,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "verbose_name": "Ингридиент",
-                "verbose_name_plural": "Ингридиенты",
+                "verbose_name": "ингредиент",
+                "verbose_name_plural": "ингредиенты",
                 "ordering": ("name",),
             },
         ),

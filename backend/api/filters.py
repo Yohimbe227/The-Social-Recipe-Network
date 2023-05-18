@@ -2,7 +2,7 @@ from rest_framework import filters
 
 
 class IngredientFilterBackend(filters.BaseFilterBackend):
-    """Фильтр ингридиентов по имени."""
+    """Фильтр ингредиентов по имени."""
 
     def filter_queryset(self, request, queryset, view):
         name = request.query_params.get('name')

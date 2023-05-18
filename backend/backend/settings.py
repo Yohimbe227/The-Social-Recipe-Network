@@ -8,11 +8,10 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv(
-    'SECRET_KEY',
-    default='django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1',
+    key='SECRET_KEY',
 )
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -23,14 +22,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'django_filters',
     'sorl.thumbnail',
-    'users.apps.UsersConfig',
-    'api.apps.ApiConfig',
-    'recipes.apps.RecipesConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+
+    'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
+    'recipes.apps.RecipesConfig',
 ]
 
 MIDDLEWARE = [
@@ -67,27 +68,21 @@ DATABASES = {
     'default': {
         'ENGINE': os.getenv(
             'DB_ENGINE',
-            default='django.db.backends.postgresql',
         ),
         'NAME': os.getenv(
             'DB_NAME',
-            default='food3',
         ),
         'USER': os.getenv(
             'POSTGRES_USER',
-            default='postgres',
         ),
         'PASSWORD': os.getenv(
             'POSTGRES_PASSWORD',
-            default=4130,
         ),
         'HOST': os.getenv(
             'DB_HOST',
-            default='localhost',
         ),
         'PORT': os.getenv(
             'DB_PORT',
-            default='5432',
         ),
     },
 }

@@ -14,8 +14,8 @@ class Migration(migrations.Migration):
             name="ingredient",
             options={
                 "ordering": ("name",),
-                "verbose_name": "ингридиент",
-                "verbose_name_plural": "ингридиенты",
+                "verbose_name": "ингредиент",
+                "verbose_name_plural": "ингредиенты",
             },
         ),
         migrations.RemoveConstraint(
