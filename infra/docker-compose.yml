@@ -29,7 +29,6 @@ services:
 
   frontend:
     image: 'yohimbe/frontend:v1'
-    restart: always
     volumes:
       - ../frontend/:/app/result_build/
 
