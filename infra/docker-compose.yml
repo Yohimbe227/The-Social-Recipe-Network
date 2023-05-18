@@ -1,4 +1,4 @@
-version: '1.26'
+version: '3.8'
 
 volumes:
   db:
@@ -7,7 +7,6 @@ volumes:
   redoc:
 
 services:
-
   db:
     image: postgres:13.0-alpine
     volumes:
@@ -17,7 +16,6 @@ services:
     restart: always
   backend:
     image: 'yohimbe/foodgram:v1'
-    build: ../backend/
     restart: always
     volumes:
       - 'static_value:/app/static/'
