@@ -22,13 +22,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'django_filters',
     'sorl.thumbnail',
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
@@ -68,6 +66,7 @@ DATABASES = {
     'default': {
         'ENGINE': os.getenv(
             'DB_ENGINE',
+            default='django.db.backends.postgresql',
         ),
         'NAME': os.getenv(
             'DB_NAME',
