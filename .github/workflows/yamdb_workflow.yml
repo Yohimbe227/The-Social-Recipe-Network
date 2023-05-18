@@ -50,7 +50,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:v1
           context: backend
           file: backend/Dockerfile
-
   deploy:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
