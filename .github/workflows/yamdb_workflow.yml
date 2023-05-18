@@ -63,8 +63,8 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          sudo docker-compose stop backend
-          sudo docker-compose rm -f backend
+          # sudo docker-compose stop backend
+          # sudo docker-compose rm -f backend
           sudo docker-compose pull backend
           rm .env
           touch .env
