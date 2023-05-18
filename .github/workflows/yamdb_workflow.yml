@@ -50,6 +50,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:v1
           context: backend
           file: backend/Dockerfile
+
       - name: Push to Docker Hub frontend
         uses: docker/build-push-action@v2
         with:
@@ -73,6 +74,7 @@ jobs:
           # sudo docker-compose stop backend
           # sudo docker-compose rm -f backend
           sudo docker-compose pull backend
+          sudo docker-compose pull frontend
           rm .env
           touch .env
           
