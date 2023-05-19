@@ -14,7 +14,7 @@ from PIL import Image
 from backend.settings import NAME_MAX_LENGTH
 from core.constants import (
     Additional,
-    Limits
+    Limits,
 )
 from core.validators import color_validator
 
