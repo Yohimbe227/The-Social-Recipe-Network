@@ -14,6 +14,7 @@ services:
     env_file:
       - ./.env
     restart: always
+
   backend:
     image: 'yohimbe/backend:v1'
     restart: always
@@ -25,7 +26,6 @@ services:
       - db
     env_file:
       - ./.env
-
 
   frontend:
     image: 'yohimbe/frontend:v1'

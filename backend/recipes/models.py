@@ -165,12 +165,12 @@ class Recipe(models.Model):
     def clean(self) -> None:
         self.name = self.name.capitalize()
         return super().clean()
-    #
-    # def save(self, *args, **kwargs) -> None:
-    #     super().save(*args, **kwargs)
-    #     image = Image.open(self.image.path)
-    #     image = image.resize(Additional.RECIPE_IMAGE_SIZE)
-    #     image.save(self.image.path)
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        image = Image.open(self.image.path)
+        image = image.resize(Additional.RECIPE_IMAGE_SIZE)
+        image.save(self.image.path)
 
     def delete(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
