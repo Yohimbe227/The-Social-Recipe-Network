@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv(
     key='SECRET_KEY',
+    default='django-insecure-hj&q85-5@tu07fdjnrc72(ew383@sd3d$u0f_bq^hcbf#-8*)1',
 )
 
 DEBUG = False
@@ -70,7 +71,7 @@ DATABASES = {
         ),
         'NAME': os.getenv(
             'DB_NAME',
-            default='postgres'
+            default='postgres',
         ),
         'USER': os.getenv(
             'POSTGRES_USER',
@@ -78,15 +79,15 @@ DATABASES = {
         ),
         'PASSWORD': os.getenv(
             'POSTGRES_PASSWORD',
-            default='postgres'
+            default='postgres',
         ),
         'HOST': os.getenv(
             'DB_HOST',
-            default='localhost'
+            default='localhost',
         ),
         'PORT': os.getenv(
             'DB_PORT',
-            default='5432'
+            default='5432',
         ),
     },
 }
