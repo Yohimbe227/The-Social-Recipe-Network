@@ -1,5 +1,5 @@
 from django.contrib.admin import ModelAdmin, TabularInline, display, register
-from django.http import HttpRequest
+# from django.http import HttpRequest
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
@@ -106,20 +106,20 @@ class TagAdmin(ModelAdmin):
 class FavoriteAdmin(ModelAdmin):
     list_display = ('user', 'recipe', 'date_added')
     search_fields = ('user__username', 'recipe__name')
-
-    def has_change_permission(
-        self,
-        request: HttpRequest,
-        obj: Favorite | None = None,
-    ) -> bool:
-        return False
-
-    def has_delete_permission(
-        self,
-        request: HttpRequest,
-        obj: Favorite | None = None,
-    ) -> bool:
-        return False
+    #
+    # def has_change_permission(
+    #     self,
+    #     request: HttpRequest,
+    #     obj: Favorite | None = None,
+    # ) -> bool:
+    #     return False
+    #
+    # def has_delete_permission(
+    #     self,
+    #     request: HttpRequest,
+    #     obj: Favorite | None = None,
+    # ) -> bool:
+    #     return False
 
 
 @register(Cart)
