@@ -12,7 +12,7 @@ services:
     volumes:
       - 'db:/var/lib/postgresql/data/'
     env_file:
-      - .env
+      - ./.env
     restart: always
   backend:
     image: 'yohimbe/backend:v1'
@@ -24,7 +24,7 @@ services:
     depends_on:
       - db
     env_file:
-      - .env
+      - ./.env
 
 
   frontend:
@@ -44,6 +44,7 @@ services:
       - redoc:/usr/share/nginx/html/api/docs/
     depends_on:
       - backend
+      - frontend
     restart: always
 
 
