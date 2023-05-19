@@ -72,7 +72,7 @@ DATABASES = {
         ),
         'NAME': os.getenv(
             'DB_NAME',
-            default='postgres',
+            default='food3',
         ),
         'USER': os.getenv(
             'POSTGRES_USER',
@@ -80,7 +80,7 @@ DATABASES = {
         ),
         'PASSWORD': os.getenv(
             'POSTGRES_PASSWORD',
-            default='postgres',
+            default='4130',
         ),
         'HOST': os.getenv(
             'DB_HOST',
@@ -120,7 +120,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 NAME_MAX_LENGTH = 100
 UNIT_MAX_LENGTH = 20
