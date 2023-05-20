@@ -1,5 +1,3 @@
-import os
-
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -174,10 +172,6 @@ class Recipe(models.Model):
         image = Image.open(self.image.path)
         image = image.resize(Additional.RECIPE_IMAGE_SIZE)
         image.save(self.image.path)
-
-    def delete(self, *args, **kwargs) -> None:
-        super().save(*args, **kwargs)
-        os.remove(self.image.path)
 
 
 class AmountIngredient(models.Model):
