@@ -7,32 +7,32 @@ from users.models import MyUser
 @register(MyUser)
 class MyUserAdmin(UserAdmin):
     list_display = (
-        "is_active",
-        "username",
-        "first_name",
-        "last_name",
-        "email",
+        'is_active',
+        'username',
+        'first_name',
+        'last_name',
+        'email',
     )
     fields = (
-        ("is_active",),
+        ('is_active',),
         (
-            "username",
-            "email",
+            'username',
+            'email',
         ),
         (
-            "first_name",
-            "last_name",
+            'first_name',
+            'last_name',
         ),
     )
     fieldsets = []
 
     search_fields = (
-        "username",
-        "email",
+        'username',
+        'email',
     )
     list_filter = (
-        "is_active",
-        "first_name",
-        "email",
+        'is_active',
+        'first_name',
+        'email',
     )
     save_on_top = True

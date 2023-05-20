@@ -10,10 +10,7 @@ from django.db.models import (
 from PIL import Image
 
 from backend.settings import NAME_MAX_LENGTH
-from core.constants import (
-    Additional,
-    Limits,
-)
+from core.constants import Additional, Limits
 from core.validators import color_validator
 
 User = get_user_model()

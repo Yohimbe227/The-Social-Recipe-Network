@@ -10,7 +10,7 @@ class Additional:
 
     SYMBOL_TRUE_SEARCH = '1', 'true'
 
-    SYMBOL_FALSE_SEARCH = '0', 'false'
+    SYMBOL_FALSE_SEARCH = '0', "false"
 
 
 class Methods:
