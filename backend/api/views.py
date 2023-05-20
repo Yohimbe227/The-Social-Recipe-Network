@@ -79,7 +79,7 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         elif is_in_cart in Additional.SYMBOL_FALSE_SEARCH:
             queryset = queryset.exclude(shopping_cart__user=self.request.user)
 
-        is_favorite = self.request.query_params.get('favorites')
+        is_favorite = self.request.query_params.get('is_favorited')
         if is_favorite in Additional.SYMBOL_TRUE_SEARCH:
             queryset = queryset.filter(in_favorites__user=self.request.user)
         if is_favorite in Additional.SYMBOL_FALSE_SEARCH:
