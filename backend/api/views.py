@@ -12,6 +12,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.filters import IngredientFilterBackend
+from api.pagination import CustomPagination
 from api.permissions import AdminOrReadOnly, AuthorOrReadOnly
 from api.serializers import (
     IngredientSerializer,
@@ -19,6 +20,7 @@ from api.serializers import (
     RecipeWriteSerializer,
     SmallRecipeSerializer,
     TagSerializer,
+    UserSerializer,
     UserSubscribeSerializer,
 )
 from backend.settings import DATE_TIME_FORMAT
@@ -43,7 +45,9 @@ class RecipeViewSet(ModelViewSet, AddDelView):
     """
 
     queryset = Recipe.objects.select_related('author')
-    permission_classes = (AuthorOrReadOnly,)
+    serializer_class = RecipeReadSerializer
+    permission_classes = (AuthorOrReadOnly | AdminOrReadOnly,)
+    pagination_class = CustomPagination
     add_serializer = SmallRecipeSerializer
 
     def perform_create(
@@ -64,27 +68,25 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         queryset = self.queryset
         tags = self.request.query_params.getlist('tags')
         if tags:
-            queryset = queryset.filter(tags__slug__in=tags).distinct()
+            queryset = queryset.filter(tags__slug__in=tags)
 
         author = self.request.query_params.get('author')
         if author:
             queryset = queryset.filter(author=author)
-
         if self.request.user.is_anonymous:
             return queryset
 
         is_in_cart = self.request.query_params.get('is_in_shopping_cart')
+
         if is_in_cart in Additional.SYMBOL_TRUE_SEARCH:
             queryset = queryset.filter(shopping_cart__user=self.request.user)
         elif is_in_cart in Additional.SYMBOL_FALSE_SEARCH:
             queryset = queryset.exclude(shopping_cart__user=self.request.user)
-
         is_favorite = self.request.query_params.get('is_favorited')
         if is_favorite in Additional.SYMBOL_TRUE_SEARCH:
             queryset = queryset.filter(in_favorites__user=self.request.user)
         if is_favorite in Additional.SYMBOL_FALSE_SEARCH:
             queryset = queryset.exclude(in_favorites__user=self.request.user)
-
         return queryset
 
     @action(
@@ -116,11 +118,11 @@ class RecipeViewSet(ModelViewSet, AddDelView):
         permission_classes=(IsAuthenticated,),
     )
     def shopping_cart(self, request: HttpRequest, pk: int | str) -> Response:
-        """Добавляет/удалет рецепт в `список покупок`.
+        """Добавляет/удаляет рецепт в `список покупок`.
 
         Args:
             request: Объект запроса.
-            pk: id рецепта, который нужно добавить/удалить в `корзину покупок`.
+            pk: `id` рецепта, который нужно добавить/удалить в `корзину покупок`.
 
         Returns:
             Responce: Статус подтверждающий/отклоняющий действие.
@@ -201,8 +203,10 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
 
     """
 
-    add_serializer = UserSubscribeSerializer
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     permission_classes = (AuthorOrReadOnly,)
+    pagination_class = CustomPagination
 
     @action(
         methods=Methods.GET_POST_DEL_METHODS,
@@ -233,7 +237,7 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
         Вызов метода через url: */user/<int:id>/subscriptions/.
 
         Args:
-            request (HttpRequest): Объект запроса.
+            request: Объект запроса.
 
         Returns:
             Responce:
@@ -241,13 +245,15 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
                 Список подписок для авторизованного пользователя.
 
         """
-        if self.request.user.is_anonymous:
+        if request.user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         pages = self.paginate_queryset(
-            User.objects.filter(subscribers__user=self.request.user),
+            User.objects.filter(subscribers__user=request.user),
         )
-        serializer = UserSubscribeSerializer(pages, many=True)
+        serializer = UserSubscribeSerializer(
+            pages, many=True, context={'request': request},
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(

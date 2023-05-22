@@ -1,4 +1,8 @@
+from django_filters import ModelMultipleChoiceFilter
+from django_filters.rest_framework import FilterSet
 from rest_framework import filters
+
+from recipes.models import Tag
 
 
 class IngredientFilterBackend(filters.BaseFilterBackend):
@@ -12,3 +16,11 @@ class IngredientFilterBackend(filters.BaseFilterBackend):
                 name__icontains=request.query_params.get('name'),
             )
         return queryset
+
+
+class RecipeFilter(FilterSet):
+    tags = ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all(),
+    )

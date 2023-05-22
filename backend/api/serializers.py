@@ -272,8 +272,6 @@ class SmallRecipeSerializer(ModelSerializer):
 
     """
 
-    image = Base64ImageField()
-
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -282,7 +280,7 @@ class SmallRecipeSerializer(ModelSerializer):
 class UserSubscribeSerializer(UserSerializer):
     """Сериализатор вывода авторов на которых подписан текущий пользователь."""
 
-    recipes = SmallRecipeSerializer(many=True, read_only=True)
+    recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
     class Meta:
@@ -301,3 +299,12 @@ class UserSubscribeSerializer(UserSerializer):
 
     def get_recipes_count(self, obj: User) -> int:
         return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
+        recipes = obj.recipes.all()
+        if limit:
+            recipes = recipes[: int(limit)]
+        serializer = SmallRecipeSerializer(recipes, many=True, read_only=True)
+        return serializer.data

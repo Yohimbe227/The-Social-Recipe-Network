@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv(
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['http://158.160.34.141']
+CSRF_TRUSTED_ORIGINS = ['http://158.160.34.141', 'http://127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -149,11 +149,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
-    'PAGE_SIZE': 6,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE_QUERY_PARAM': 'limit',
 }
 DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
 CSV_DATA_DIR = BASE_DIR / 'data/'
