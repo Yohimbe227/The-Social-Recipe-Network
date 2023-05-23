@@ -3,6 +3,7 @@ from django.db.models import F, Q, QuerySet, Sum
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from api.filters import IngredientFilterBackend
+from api.filters import IngredientFilterBackend, RecipeFilter
 from api.pagination import CustomPagination
 from api.permissions import AdminOrReadOnly, AuthorOrReadOnly
 from api.serializers import (
@@ -20,7 +21,6 @@ from api.serializers import (
     RecipeWriteSerializer,
     SmallRecipeSerializer,
     TagSerializer,
-    UserSerializer,
     UserSubscribeSerializer,
 )
 from backend.settings import DATE_TIME_FORMAT
@@ -45,10 +45,11 @@ class RecipeViewSet(ModelViewSet, AddDelView):
     """
 
     queryset = Recipe.objects.select_related('author')
-    serializer_class = RecipeReadSerializer
     permission_classes = (AuthorOrReadOnly | AdminOrReadOnly,)
     pagination_class = CustomPagination
     add_serializer = SmallRecipeSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(
         self,
@@ -66,9 +67,6 @@ class RecipeViewSet(ModelViewSet, AddDelView):
 
         """
         queryset = self.queryset
-        tags = self.request.query_params.getlist('tags')
-        if tags:
-            queryset = queryset.filter(tags__slug__in=tags)
 
         author = self.request.query_params.get('author')
         if author:
@@ -203,10 +201,9 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
 
     """
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = (AuthorOrReadOnly,)
     pagination_class = CustomPagination
+    add_serializer = UserSubscribeSerializer
 
     @action(
         methods=Methods.GET_POST_DEL_METHODS,
@@ -252,7 +249,9 @@ class UserViewSet(DjoserUserViewSet, AddDelView):
             User.objects.filter(subscribers__user=request.user),
         )
         serializer = UserSubscribeSerializer(
-            pages, many=True, context={'request': request},
+            pages,
+            many=True,
+            context={'request': request},
         )
         return self.get_paginated_response(serializer.data)
 
