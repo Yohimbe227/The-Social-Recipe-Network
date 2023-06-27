@@ -88,6 +88,3 @@ scp nginx.conf <username>@<host>:/home/<username>/nginx.conf
     sudo docker-compose exec backend python manage.py createsuperuser
     ```
     - Проект будет доступен по вашему IP
-
-## Проект в интернете
-Проект запущен и доступен по [адресу](http://http://158.160.34.141/recipes)
