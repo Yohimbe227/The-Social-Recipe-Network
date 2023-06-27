@@ -1,11 +1,6 @@
 # Проект Foodgram
 ![example workflow](https://github.com/Yohimbe227/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)  
 
-http://158.160.34.141/recipes
-login: admin
-mail: kamanchi@mail.ru
-pass: 4130
-
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
 [![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat-square&logo=Django%20REST%20Framework)](https://www.django-rest-framework.org/)
