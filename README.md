@@ -1,4 +1,4 @@
-# Проект Foodgram
+# Проект The Social Recipe Network
 ![example workflow](https://github.com/Yohimbe227/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)  
 
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
@@ -12,8 +12,7 @@
 [![Yandex.Cloud](https://img.shields.io/badge/-Yandex.Cloud-464646?style=flat-square&logo=Yandex.Cloud)](https://cloud.yandex.ru/)
 
 
-
-Foodgram реализован для публикации рецептов. Авторизованные пользователи
+Проект The SRN реализован для обучения, ну и для публикации рецептов. Авторизованные пользователи
 могут подписываться на понравившихся авторов, добавлять рецепты в избранное,
 в покупки, скачать список покупок ингредиентов для добавленных в покупки
 рецептов.
